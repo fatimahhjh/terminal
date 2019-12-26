@@ -1,0 +1,37 @@
+{
+  "id": "1521050",
+  "name": "hjh-icon",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "2578455",
+      "name": "未登录-头像",
+      "font_class": "weidenglu-touxiang",
+      "unicode": "e60c",
+      "unicode_decimal": 58892
+    },
+    {
+      "icon_id": "11808057",
+      "name": "mine",
+      "font_class": "mine",
+      "unicode": "e6a6",
+      "unicode_decimal": 59046
+    },
+    {
+      "icon_id": "11808112",
+      "name": "lock",
+      "font_class": "lock",
+      "unicode": "e6c0",
+      "unicode_decimal": 59072
+    },
+    {
+      "icon_id": "11993579",
+      "name": "user-cog-solid",
+      "font_class": "user-cog-solid",
+      "unicode": "e7bc",
+      "unicode_decimal": 59324
+    }
+  ]
+}
