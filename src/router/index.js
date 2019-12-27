@@ -4,12 +4,12 @@ import VueRouter from "vue-router";
 Vue.use(VueRouter);
 const routes = [{
     path: '/',
-    redirect: "/deal-index"
+    redirect: "/terminal-index"
   },
   {
-    path: '/deal-index',
-    name: 'deal-index',
-    component: () => import('../views/dealIndex.vue')
+    path: '/terminal-index',
+    name: 'terminal-index',
+    component: () => import('../views/terminalIndex.vue')
   },
   // {
   //   path: '/single-detail',
