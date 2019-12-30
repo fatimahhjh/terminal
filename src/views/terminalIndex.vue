@@ -141,18 +141,18 @@
      <el-table-column
       prop="UNITED_INEN_NUM"
       label="统一认证号"
-      width="100">
+      width="120">
     </el-table-column>
      <el-table-column
       prop="DEPARTMENT"
       label="部门"
-      width="180">
+      width="130">
     </el-table-column>
     <el-table-column label="操作">
       <template slot-scope="scope">
         <el-button
           size="mini"
-          @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+          @click="editStaff(scope.$index, scope.row)">编辑</el-button>
         <el-button
           size="mini"
           type="danger"
@@ -161,7 +161,27 @@
     </el-table-column>
   </el-table>
       </el-dialog>
-
+<!-- 这个是修改使用人员信息的弹框 -->
+<el-dialog title="编辑使用人员信息" :visible.sync="editStaffDialog">
+  <el-form :model="EditStaffform">
+    <el-form-item label="姓名" :label-width="formLabelWidth">
+      <el-input v-model="EditStaffform.NAME" autocomplete="off"></el-input>
+    </el-form-item>
+    <el-form-item label="岗位" :label-width="formLabelWidth">
+      <el-input v-model="EditStaffform.JOB" autocomplete="off"></el-input>
+    </el-form-item>
+    <el-form-item label="统一认证号" :label-width="formLabelWidth">
+      <el-input v-model="EditStaffform.UNITED_INEN_NUM" autocomplete="off"></el-input>
+    </el-form-item>
+    <el-form-item label="部门" :label-width="formLabelWidth">
+      <el-input v-model="EditStaffform.DEPARTMENT" autocomplete="off"></el-input>
+    </el-form-item>
+  </el-form>
+  <div slot="footer" class="dialog-footer">
+    <el-button @click="editStaffDialog = false">取 消</el-button>
+    <el-button type="primary" @click="confirmEdit">确 定</el-button>
+  </div>
+</el-dialog>
       <!-- 这个是一线处理的弹窗 -->
       <el-dialog title="" :visible.sync="DealDialogVisible" width="65%" center>
         <div class="el_body_dialog">
@@ -357,6 +377,14 @@ export default {
         INC_REASON: "",
         RESTORE_TIME: format(new Date())
       },
+        editStaffDialog: false,
+        EditStaffform: {
+          NAME: '',
+          JOB: '',
+          UNITED_INEN_NUM: '',
+          DEPARTMENT: '',
+        },
+        formLabelWidth: '120px',
       rules: {
         INC_REASON: [
           { required: true, validator: validateIncReason, trigger: "blur" }
@@ -486,22 +514,45 @@ export default {
   methods: {
     // 管理人员事件
     staffManage() {
-      this.staffDialogVisible = true;
       this.$http.get("getPeople")
       .then(res=>{
-        consloe.log(res)
+        console.log(res)
         let SS=res.data.users
         this.staffData=SS
+         this.staffDialogVisible = true;
       })
       .catch(res=>{
         this.$message.error("获取人员信息失败！")
       })
     },
-     handleEdit(index, row) {
+     editStaff(index, row) {
         console.log(index, row);
+        this.editStaffDialog=true;
+         let _row = row
+          //将每一行的数据赋值给Dialog弹框（这里是重点）
+        this.EditStaffform = Object.assign({}, _row)
       },
       handleDelete(index, row) {
         console.log(index, row);
+      },
+      // 确认修改使用人员
+      confirmEdit(){
+ this.$confirm('确认修改人员信息？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$message({
+            type: 'success',
+            message: '修改成功!',
+          });
+          this.staffManage()
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消修改'
+          });          
+        });
       },
     terminalManage() {
       this.staffDialogVisible = true;
