@@ -116,7 +116,7 @@
                 class="white_font"
                 type="primary"
                 size="mini"
-                @click="portManage(scope.row.SWITCH_PORT)"
+                @click="portManage(scope.row.SWITCH_PORT,scope.row.STATUS)"
                 >端口管理</el-button
               >
             </template>
@@ -124,20 +124,42 @@
         </el-table>
       </div>
       <!-- 这个是管理人员弹窗 -->
-      <el-dialog title="收货地址" :visible.sync="staffDialogVisible">
-        <el-table :data="gridData">
-          <el-table-column
-            property="date"
-            label="日期"
-            width="150"
-          ></el-table-column>
-          <el-table-column
-            property="name"
-            label="姓名"
-            width="200"
-          ></el-table-column>
-          <el-table-column property="address" label="地址"></el-table-column>
-        </el-table>
+      <el-dialog title="使用人员管理" :visible.sync="staffDialogVisible">
+        <el-table
+    :data="staffData"
+    style="width: 100%">
+    <el-table-column
+      prop="NAME"
+      label="姓名"
+      width="100">
+    </el-table-column>
+     <el-table-column
+      prop="JOB"
+      label="岗位"
+      width="100">
+    </el-table-column>
+     <el-table-column
+      prop="UNITED_INEN_NUM"
+      label="统一认证号"
+      width="100">
+    </el-table-column>
+     <el-table-column
+      prop="DEPARTMENT"
+      label="部门"
+      width="180">
+    </el-table-column>
+    <el-table-column label="操作">
+      <template slot-scope="scope">
+        <el-button
+          size="mini"
+          @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+        <el-button
+          size="mini"
+          type="danger"
+          @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+      </template>
+    </el-table-column>
+  </el-table>
       </el-dialog>
 
       <!-- 这个是一线处理的弹窗 -->
@@ -176,29 +198,32 @@
                       <div class="middle_place">
                         <el-switch
                           style="display: block"
-                          v-model="value2"
+                          v-model="status"
                           active-color="#13ce66"
                           inactive-color="#ff4949"
                           active-text="开启端口"
                           inactive-text="关闭端口"
+                          active-value="off"
+                          inactive-value="on"
+                      
                         >
-                        </el-switch>
+                        </el-switch> 
                       </div></div
                   ></el-col>
                   <el-col :span="17" :offset="0"
                     ><div class="grid-content bg-purple">
                       <div class="middle_place2">
-                        <el-radio v-model="radio" label="永久有效"
+                        <el-radio :disabled="status!='off'" v-model="radio" label="永久有效"
                           >永久有效</el-radio
                         >
-                        <el-radio v-model="radio" label="选取时间段"
+                        <el-radio :disabled="status!='off'" v-model="radio" label="restoreTime"
                           >选取时间段： <el-date-picker
-      v-model="restoreTime"
-      type="datetime"
-      format="yyyy-MM-dd HH:mm"
-      placeholder="选择日期时间">
-    </el-date-picker></el-radio
-                        >
+                                          v-model="restoreTime"
+                                          type="datetime"
+                                          format="yyyy-MM-dd HH:mm"
+                                          placeholder="选择日期时间">
+                                      </el-date-picker>
+                                      </el-radio>
                       </div>
                     </div></el-col
                   >
@@ -208,7 +233,7 @@
                     ><div class="grid-content bg-purple">
                       <div class="btns_position">
                         <el-button type="success" size="middle">确认</el-button>
-                        <el-button type="info" size="middle">取消</el-button>
+                        <el-button type="info" size="middle" @click="canclePortMana">取消</el-button>
                       </div>
                     </div></el-col
                   >
@@ -311,10 +336,11 @@ export default {
       // 这是控制一线处理对话框显示与否
       DealDialogVisible: false,
       failedDialogVisible: false,
-      value2: true,
+      status:'',
       restoreTime:'',
       radio: "",
       tableData: [],
+      staffData:[],
       result_list: [],
       datePicked: [start, new Date()],
       multipleSelection: [],
@@ -461,7 +487,22 @@ export default {
     // 管理人员事件
     staffManage() {
       this.staffDialogVisible = true;
+      this.$http.get("getPeople")
+      .then(res=>{
+        consloe.log(res)
+        let SS=res.data.users
+        this.staffData=SS
+      })
+      .catch(res=>{
+        this.$message.error("获取人员信息失败！")
+      })
     },
+     handleEdit(index, row) {
+        console.log(index, row);
+      },
+      handleDelete(index, row) {
+        console.log(index, row);
+      },
     terminalManage() {
       this.staffDialogVisible = true;
     },
@@ -471,6 +512,10 @@ export default {
     // 事件发生变化重新请求数据
     onChange() {
       this.loadData();
+    },
+    // 取消端口管理
+    canclePortMana(){
+this.DealDialogVisible=false;
     },
     //   dateChangeformat(val){
     // var ctx = this;
@@ -487,7 +532,6 @@ export default {
         .get("getList")
         .then(res => {
           this.loading = false;
-          console.log(res.data);
           let list1 = res.data.terminals;
           this.tableData = list1;
         })
@@ -522,19 +566,21 @@ export default {
       });
     },
     /*多选框被触发
-     多选框被选中时，单个一线处理按钮设置为不可用状态
+     多选框被选中时，单个端口管理按钮设置为不可用状态
      */
     handleSelectionChange(val) {
       this.multipleSelection = val;
     },
     /*只有多选时才能触发批量处理按钮
-     这是单条处理告警的对话框事件
+     这是端口管理的对话框事件
     */
-    portManage(SWITCH_PORT) {
+    portManage(SWITCH_PORT,STATUS) {
       getUserInfo().then(res => {
         this.username = res.data.username;
         if (this.username) {
           this.INC_NUMBER_LIST = [];
+          this.status='';
+          this.status=STATUS;
           this.SWITCH_PORT = SWITCH_PORT;
           this.DealDialogVisible = true;
         } else {
