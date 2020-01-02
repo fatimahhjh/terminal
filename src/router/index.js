@@ -11,11 +11,6 @@ const routes = [{
     name: 'terminal-index',
     component: () => import('../views/terminalIndex.vue')
   },
-  // {
-  //   path: '/single-detail',
-  //   component: () => import('../views/singleDetail.vue')
-  // }
-
 
 
 ];

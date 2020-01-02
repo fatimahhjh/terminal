@@ -33,14 +33,18 @@
                   text-color="white"
                   active-text-color="white"
                 >
-                  <el-menu-item v-if="!username" index="1" @click="login">
+                  <el-menu-item
+                    v-if="!$root.Hub.username"
+                    index="1"
+                    @click="login"
+                  >
                     <i class="el-icon-user-solid"></i>
                     登录
                   </el-menu-item>
                   <el-submenu v-else index="2">
                     <template slot="title" class="login_text">
                       <i class="el-icon-user-solid"></i>
-                      {{ username }}
+                      {{ $root.Hub.username }}
                     </template>
                     <el-menu-item index="2-1" @click="logout"
                       >退出登录</el-menu-item
@@ -63,7 +67,7 @@
 
 <style lang="less">
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
@@ -124,7 +128,7 @@
         cursor: pointer;
       }
       .el-icon-user-solid:before {
-        content: '\e7a5';
+        content: "\e7a5";
         width: 107px;
         color: white;
         font-size: 18px;
@@ -151,18 +155,18 @@
 </style>
 
 <script>
-import { getCookie } from './utils/getCookie.js';
-import { getUserInfo } from './utils/getUserInfo.js';
+import { getCookie } from "./utils/getCookie.js";
+import { getUserInfo } from "./utils/getUserInfo.js";
 export default {
   data() {
     return {
-      username: '',
-      activeIndex: '1'
+      username: "",
+      activeIndex: "1"
     };
   },
   methods: {
     login() {
-      window.location.href = '/login?next=' + window.location.href;
+      window.location.href = "/login?next=" + window.location.href;
     },
     handleSelect(key, keyPath) {
       console.log(key, keyPath);
@@ -170,33 +174,29 @@ export default {
     logout() {
       //弹出确认对话框
       //用户点击确认，跳回用户登录页面，清除token
-      this.$confirm('确定要退出登录吗?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
+      this.$confirm("确定要退出登录吗?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
       })
         .then(() => {
-          this.$message.success('退出登录成功！');
-          window.location.href = '/logout?next=' + window.location.href;
+          this.$message.success("退出登录成功！");
+          window.location.href = "/logout?next=" + window.location.href;
         })
         .catch(() => {
           this.$message({
-            type: 'info',
-            message: '已取消退出'
+            type: "info",
+            message: "已取消退出"
           });
         });
     }
   },
   mounted() {
-    getUserInfo().then(res => {
-      let status = res.data.status;
-      if ((status = 'success')) {
-        this.username = res.data.username;
-        // console.log(this.username);
-      } else {
-        this.$message.error('用户身份获取失败');
-      }
-    });
+    document.cookie = "username";
+    this.username = getCookie("userName");
+    if (this.username = "") {
+      window.location.href = "/login?next=" + window.location.href;
+    } 
   }
 };
 </script>

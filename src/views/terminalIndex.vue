@@ -22,6 +22,7 @@
           <!-- 导航栏操作 -->
           <el-card shadow="always">
             <div class="oprations_btns">
+<upload :submitUrl="submitUrl"></upload>
               <el-tag effect="dark" @click="staffManage" class="staff_btn"
                 >使用人员管理</el-tag
               >
@@ -51,6 +52,7 @@
           <el-button type="primary" size="mini" @click="queryTerminal"
             >查找</el-button
           >
+          <!-- {{$root.Hub.username}} -->
         </div>
           </el-card>
         </div>
@@ -127,7 +129,7 @@
         </el-table>
       </div>
       <!-- 这个是管理人员弹窗 -->
-      <el-dialog title="使用人员管理" :visible.sync="staffDialogVisible">
+      <el-dialog title="使用人员管理" :visible.sync="staffDialogVisible" width="80%">
     <div class="addBtns"> <el-button type="success" size="mini" @click="addStaff" class="white_font">新增使用人员</el-button></div>
         <el-table
     :data="staffData"
@@ -135,22 +137,22 @@
     <el-table-column
       prop="name"
       label="姓名"
-      width="100">
+      >
     </el-table-column>
      <el-table-column
       prop="job"
       label="岗位"
-      width="100">
+     >
     </el-table-column>
      <el-table-column
       prop="united_iden_num"
       label="统一认证号"
-      width="120">
+     >
     </el-table-column>
      <el-table-column
       prop="department"
       label="部门"
-      width="130">
+      >
     </el-table-column>
     <el-table-column label="操作">
       <template slot-scope="scope">
@@ -191,7 +193,7 @@
 </el-dialog>
 <!-- 这是公用终端管理的弹框 -->
 
-  <el-dialog title="公用终端管理" :visible.sync="terminalsDialogVisible" width="70%">
+  <el-dialog title="公用终端管理" :visible.sync="terminalsDialogVisible" width="80%">
     <div class="addBtns"> <el-button type="success" size="mini" @click="addTerms" class="white_font">新增终端</el-button></div>
     
         <el-table
@@ -200,32 +202,32 @@
     <el-table-column
       prop="location"
       label="物理位置"
-      width="110">
+     >
     </el-table-column>
      <el-table-column
       prop="terminal_ip"
       label="终端地址"
-      width="140">
+      >
     </el-table-column>
      <el-table-column
       prop="terminal_type"
       label="终端分类"
-      width="100">
+     >
     </el-table-column>
      <el-table-column
       prop="switch_ip"
       label="交换机设备IP"
-      width="130">
+     >
     </el-table-column>
     <el-table-column
       prop="switch_name"
       label="交换机设备名称"
-      width="130">
+      >
     </el-table-column>
     <el-table-column
       prop="switch_port"
       label="交换机接入端口"
-      width="150">
+    >
     </el-table-column>
     <el-table-column label="操作">
       <template slot-scope="scope">
@@ -506,34 +508,12 @@ import { format1, format } from "../utils/utils.js";
 import { black } from "color-name";
 import { getCookie } from "../utils/getCookie.js";
 import { getUserInfo } from "../utils/getUserInfo.js";
+import upload from "./upload.vue"
 export default {
+  components:{
+    upload
+  },
   data() {
-    const start = new Date();
-    start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
-    const validateIncReason = (rule, value, callback) => {
-      if (value === "") {
-        callback(new Error("事件原因不能为空"));
-      } else {
-        callback();
-        document.getElementById("validateSuccess3").style.borderColor = "green";
-      }
-    };
-    const validateDealContent = (rule, value, callback) => {
-      if (value === "") {
-        callback(new Error("处理内容不能为空"));
-      } else {
-        callback();
-        document.getElementById("validateSuccess2").style.borderColor = "green";
-      }
-    };
-    const validateInfluence = (rule, value, callback) => {
-      if (value === "") {
-        callback(new Error("事件影响不能为空"));
-      } else {
-        callback();
-        document.getElementById("validateSuccess1").style.borderColor = "green";
-      }
-    };
     return {
       staffDialogVisible: false,
       // 这是控制一线处理对话框显示与否
@@ -547,6 +527,7 @@ export default {
       restoreTime:'',
       radio: "",
       tableData: [],
+      submitUrl:"/staff/upload",
       staffData:[],
       terminalsData:[],
       termstitle:'',
@@ -556,21 +537,7 @@ export default {
       },
       termType:[],
       result_list: [],
-      datePicked: [start, new Date()],
       multipleSelection: [],
-      sizeForm: {
-        LAYER_LIST: "网络层面",
-        INC_CATEGORY: "网络通信",
-        IS_AFFECT_BUSINESS: "否",
-        SOL_DEGREE: "完全解决",
-        ISPJS: "否",
-        RESOLVE_CHANNEL: "无需继续处理",
-        ISHIGHAVAILABLE: "否",
-        AFFECT_SITUATION: "",
-        DEAL_NOTE: "",
-        INC_REASON: "",
-        RESTORE_TIME: format(new Date())
-      },
         editStaffDialog: false,
         editTerminalsDialog:false,
         terminalsDialogVisible:false,
@@ -589,121 +556,6 @@ export default {
           switch_port: ''
         },
         formLabelWidth: '120px',
-      rules: {
-        INC_REASON: [
-          { required: true, validator: validateIncReason, trigger: "blur" }
-        ],
-        DEAL_NOTE: [
-          { required: true, validator: validateDealContent, trigger: "blur" }
-        ],
-        AFFECT_SITUATION: [
-          { required: true, validator: validateInfluence, trigger: "blur" }
-        ]
-      },
-      influences: [
-        {
-          value: "是",
-          label: "是"
-        },
-        {
-          value: "否",
-          label: "否"
-        }
-      ],
-      // 怎么把生产故障事件传给后台，这一条后台是怎么存储的？
-      eventKind: "生产故障事件",
-      solveWay: [
-        {
-          value: "完全解决",
-          label: "完全解决"
-        },
-        {
-          value: "规避解决",
-          label: "规避解决"
-        }
-      ],
-      ticketArea: [
-        {
-          value: "是",
-          label: "是"
-        },
-        {
-          value: "否",
-          label: "否"
-        }
-      ],
-      highWay: [
-        {
-          value: "是",
-          label: "是"
-        },
-        {
-          value: "否",
-          label: "否"
-        }
-      ],
-      solveByWhat: [
-        {
-          value: "无需继续处理",
-          label: "无需继续处理"
-        },
-        {
-          value: "维护手册",
-          label: "维护手册"
-        }
-      ],
-      belongingGroup: [
-        {
-          value: "网络层面",
-          label: "网络层面"
-        },
-        {
-          value: "客户端设置",
-          label: "客户端设置"
-        },
-        {
-          value: "应用层面",
-          label: "应用层面"
-        },
-        {
-          value: "操作系统",
-          label: "操作系统"
-        },
-        {
-          value: "数据库",
-          label: "数据库"
-        },
-        {
-          value: "监控系统",
-          label: "监控系统"
-        },
-        {
-          value: "硬件层面",
-          label: "硬件层面"
-        }
-      ],
-      secondaryCategory: [
-        {
-          value: "业务应用",
-          label: "业务应用"
-        },
-        {
-          value: "机器设备 ",
-          label: "机器设备"
-        },
-        {
-          value: "机房设施",
-          label: "机房设施"
-        },
-        {
-          value: "系统环境",
-          label: "系统环境"
-        },
-        {
-          value: "网络通信",
-          label: "网络通信"
-        }
-      ],
       INC_NUMBER_LIST: [],
       listIncNum: [],
       switch_port: "",
@@ -731,10 +583,10 @@ export default {
     },
     // 管理人员事件
     staffManage() {
-      this.$http.get("getPeople")
+      this.$http.get("staff")
       .then(res=>{
         console.log(res)
-        let SS=res.data.users
+        let SS=res.data.data
         this.staffData=SS
          this.staffDialogVisible = true;
       })
@@ -798,9 +650,9 @@ this.staffTitle="修改使用人员信息"
       },
       // 终端管理
     terminalManage() {
-       this.$http.get("getList")
+       this.$http.get("device")
       .then(res=>{
-        let terms=res.data.terminals
+        let terms=res.data.data
         this.terminalsData=terms
          this.terminalsDialogVisible = true;
       })
@@ -863,29 +715,19 @@ this.emergencyOffDialogVisible=true;
         });
 },
     // 事件发生变化重新请求数据
-    onChange() {
-      this.loadData();
-    },
+    // onChange() {
+    //   this.loadData();
+    // },
     // 取消端口管理
     canclePortMana(){
 this.DealDialogVisible=false;
     },
-    //   dateChangeformat(val){
-    // var ctx = this;
-    //       ctx.RESTORE_TIME = val;
-    //       this.RESTORE_TIME=ctx.RESTORE_TIME;
-    //   },
-    // 获取数据
-    //       params: {
-    //         startTime: format1(this.datePicked[0]),
-    //         endTime: format1(this.datePicked[1])
-    //       }
     loadData() {
       this.$http
-        .get("getList")
+        .get("/terminal")
         .then(res => {
           this.loading = false;
-          let list1 = res.data.terminals;
+          let list1 = res.data.data;
           this.tableData = list1;
         })
         .catch(res => {
@@ -896,28 +738,6 @@ this.DealDialogVisible=false;
           }, 5000);
         });
     },
-
-    // 批量一线处理
-    // multiDeal() {
-    //   getUserInfo().then(res => {
-    //     this.username = res.data.username;
-
-    //     if (this.username) {
-    //       if (this.multipleSelection.length <= 0) {
-    //         this.DealDialogVisible = false;
-    //         this.$message.warning("请至少选择一个事件进行答单！");
-    //       } else {
-    //         this.DealDialogVisible = true;
-    //         this.INC_NUMBER_LIST = [];
-    //         this.multipleSelection.forEach(item => {
-    //           this.INC_NUMBER_LIST.push(item.switch_port);
-    //         });
-    //       }
-    //     } else {
-    //       this.$message.warning("未登录请先登录");
-    //     }
-    //   });
-    // },
     /*多选框被触发
      多选框被选中时，单个端口管理按钮设置为不可用状态
      */
@@ -1035,7 +855,7 @@ this.DealDialogVisible=false;
         height: 71px;
         .oprations_btns {
           width: 700px;
-          margin-left: -80px;
+          margin-left: -25px;
           .staff_btn {
             background-color: rgb(238, 137, 61);
             border: 1px solid #ffa259;
