@@ -19,20 +19,6 @@
               >取消选择</el-button
             >
           </div> -->
-          <!-- <div class="datePicker">
-            <el-date-picker
-              v-model="datePicked"
-              type="daterange"
-              range-separator="至"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期"
-              format="yyyy 年 MM 月 dd 日"
-              value-format="yyyy-MM-dd"
-              @change="onChange()"
-              :clearable="false"
-            >
-            </el-date-picker>
-          </div> -->
           <!-- 导航栏操作 -->
           <el-card shadow="always">
             <div class="oprations_btns">
@@ -44,11 +30,28 @@
               >
               <el-tag
                 effect="dark"
-                @click="toggleSelection()"
-                class="emergency_btn"
+                @click="emergencyOnekeyOn()"
+                class="emergencyOn_btn"
                 >一键应急开启</el-tag
               >
+               <el-tag
+                effect="dark"
+                @click="emergencyOnekeyOff()"
+                class="emergencyOff_btn"
+                >一键应急关闭</el-tag
+              >
             </div>
+            <div class="search_box">
+          <el-input
+            v-model="queryInfo.terminal_ip"
+            class="search"
+            size="mini"
+            placeholder="请输入要查找终端IP"
+          ></el-input>
+          <el-button type="primary" size="mini" @click="queryTerminal"
+            >查找</el-button
+          >
+        </div>
           </el-card>
         </div>
 
@@ -323,14 +326,12 @@
         </div>
       </el-dialog>
       <!-- 这个是批量应急终端端口开启弹框 -->
-       <el-dialog title="" :visible.sync="DealDialogVisible" width="65%" center>
+       <el-dialog title="" :visible.sync="emergencyOnDialogVisible" width="65%" center>
         <div class="el_body_dialog">
           <div class="incNumTitle">
-            <span id="fontWeightUp">你要对以下端口进行管理</span>
-            <span v-if="multipleSelection.length > 0" id="fontWeightUp"
-              >共{{ multipleSelection.length }}条</span
-            >
-            <span v-else id="fontWeightUp">(共1条)</span>
+            <span id="fontWeightUp">你要对以下应急端口进行端口开启</span>
+            <span id="fontWeightUp"
+              >共{{ multipleSelection.length }}条</span>
           </div>
           <el-card shadow="always">
             <div class="incNumshow">
@@ -346,33 +347,24 @@
                     ><div class="grid-content bg-purple">
                       <div class="middle_place">
                         <el-switch
+                         v-model="multiEmerOnValue"
                           style="display: block"
-                          v-model="status"
                           active-color="#13ce66"
                           inactive-color="#ff4949"
                           active-text="开启端口"
                           inactive-text="关闭端口"
-                          active-value="off"
-                          inactive-value="on"
-                      
+                          active-value="on"
+                          inactive-value="off"
                         >
                         </el-switch> 
                       </div></div
                   ></el-col>
                   <el-col :span="17" :offset="0"
                     ><div class="grid-content bg-purple">
-                      <div class="middle_place2">
-                        <el-radio :disabled="status!='off'" v-model="radio" label="永久有效"
+                      <div class="posi_adjust">
+                        <el-radio v-model="radio" label="永久有效"
                           >永久有效</el-radio
                         >
-                        <el-radio :disabled="status!='off'" v-model="radio" label="restoreTime"
-                          >选取时间段： <el-date-picker
-                                          v-model="restoreTime"
-                                          type="datetime"
-                                          format="yyyy-MM-dd HH:mm"
-                                          placeholder="选择日期时间">
-                                      </el-date-picker>
-                                      </el-radio>
                       </div>
                     </div></el-col
                   >
@@ -382,12 +374,69 @@
                     ><div class="grid-content bg-purple">
                       <div class="btns_position">
                         <el-button type="success" size="middle">确认</el-button>
-                        <el-button type="info" size="middle" @click="canclePortMana">取消</el-button>
+              <el-button type="info" size="middle" @click="cancleEmerOn">取消</el-button>
                       </div>
                     </div></el-col
                   >
                 </el-row>
-             
+            </div>
+          </el-card>
+        </div>
+      </el-dialog>
+      <!-- 这个是批量应急终端端口关闭弹框 -->
+      <el-dialog title="" :visible.sync="emergencyOffDialogVisible" width="65%" center>
+        <div class="el_body_dialog">
+          <div class="incNumTitle">
+            <span id="fontWeightUp">你要对以下应急端口进行端口关闭</span>
+            <span id="fontWeightUp"
+              >共{{ multipleSelection.length }}条</span>
+          </div>
+          <el-card shadow="always">
+            <div class="incNumshow">
+                   <el-row>
+                  <el-col :span="24"
+                    ><div class="grid-content bg-purple-dark">
+                      <div class="middle_place1" v-for="(item, index) in INC_NUMBER_LIST" :key="index">{{ item }},</div>
+                    </div></el-col
+                  >
+                </el-row>
+                <el-row :gutter="20">
+                  <el-col :span="7"
+                    ><div class="grid-content bg-purple">
+                      <div class="middle_place">
+                        <el-switch
+                        v-model="multiEmerOffValue"
+                          style="display: block"
+                          active-color="#13ce66"
+                          inactive-color="#ff4949"
+                          active-text="开启端口"
+                          inactive-text="关闭端口"
+                          active-value="on"
+                          inactive-value="off"
+                        >
+                        </el-switch> 
+                      </div></div
+                  ></el-col>
+                  <el-col :span="17" :offset="0"
+                    ><div class="grid-content bg-purple">
+                      <div class="posi_adjust">
+                        <el-radio v-model="radio" label="永久有效"
+                          >永久有效</el-radio
+                        >
+                      </div>
+                    </div></el-col
+                  >
+                </el-row>
+                <el-row :gutter="24">
+                  <el-col :span="24"
+                    ><div class="grid-content bg-purple">
+                      <div class="btns_position">
+                        <el-button type="success" size="middle">确认</el-button>
+              <el-button type="info" size="middle" @click="cancleEmerOff">取消</el-button>
+                      </div>
+                    </div></el-col
+                  >
+                </el-row>
             </div>
           </el-card>
         </div>
@@ -489,7 +538,11 @@ export default {
       staffDialogVisible: false,
       // 这是控制一线处理对话框显示与否
       DealDialogVisible: false,
+      emergencyOnDialogVisible:false,
+      emergencyOffDialogVisible:false,
       failedDialogVisible: false,
+      multiEmerOnValue:true,
+      multiEmerOffValue:true,
       status:'',
       restoreTime:'',
       radio: "",
@@ -498,6 +551,9 @@ export default {
       terminalsData:[],
       termstitle:'',
       staffTitle:'',
+        queryInfo: {
+        terminal_ip: ""
+      },
       termType:[],
       result_list: [],
       datePicked: [start, new Date()],
@@ -529,7 +585,7 @@ export default {
           terminal_ip: '',
           terminal_type: '',
           switch_ip: '',
-             switch_name: '',
+          switch_name: '',
           switch_port: ''
         },
         formLabelWidth: '120px',
@@ -660,6 +716,19 @@ export default {
   },
 
   methods: {
+      // 查找指定终端
+    queryTerminal() {
+      this.$http
+        .get("getnodes", {
+          params: this.queryInfo
+        })
+        .then(res => {
+          console.log(res.data);
+        })
+        .catch(res => {
+          this.$message.error("查找失败！");
+        });
+    },
     // 管理人员事件
     staffManage() {
       this.$http.get("getPeople")
@@ -753,31 +822,46 @@ addTerms(){
       this.termstitle="新增终端"
  this.editTerminalsDialog=true;
 },
-// 一键应急
-toggleSelection(){
- this.$refs.multipleTable.toggleRowSelection(this.multipleTable.find(terminal_type == "应急终端"));
+// 取消应急终端端口开启
+cancleEmerOn(){
+   this.$confirm('确认取消一键应急终端端口开启？, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+         this.emergencyOnDialogVisible=false;
+        })
+         .catch(() => {
+          this.$message({
+            type: 'info',
+            message: '继续一键应急终端端口开启'
+          });
+        });
 },
-    // emergencyOnekey() {
-    //   if (this.multipleSelection.length <= 0) {
-    //         this.DealDialogVisible = false;
-    //         this.$message.warning("请至少选择一个应急终端进行端口开启！");
-    //         }
-    //       else {
-    //         this.multipleSelection.forEach(item => {
-    //           this.termType.shift(item.terminal_type);
-    //           console.log(this.itemType)
-    //         })
-    //         if(this.termType.indexOf("通用终端")){
-    //           this.$message.error("不能对通用终端进行应急端口开启！")
-    //         }else{
-    //            this.DealDialogVisible = true;
-    //          this.INC_NUMBER_LIST = [];
-    //         this.multipleSelection.forEach(item => {
-    //           this.INC_NUMBER_LIST.push(item.switch_port);
-    //         })
-    //         }
-    //        }
-    // },
+// 一键应急开启端口
+    emergencyOnekeyOn() {
+      this.emergencyOnDialogVisible=true
+    },
+    // 一键应急端口关闭
+    emergencyOnekeyOff(){
+this.emergencyOffDialogVisible=true;
+    },
+    // 取消一键应急终端端口关闭
+    cancleEmerOff(){
+   this.$confirm('确认取消一键应急终端端口关闭？, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+         this.emergencyOffDialogVisible=false;
+        })
+        .catch(() => {
+          this.$message({
+            type: 'info',
+            message: '继续一键应急终端端口关闭'
+          });          
+        });
+},
     // 事件发生变化重新请求数据
     onChange() {
       this.loadData();
@@ -946,27 +1030,11 @@ this.DealDialogVisible=false;
       width: 100%;
       height: 100%;
       clear: both;
-
       .nav_area {
         width: 100%;
         height: 71px;
-        // .terminal_btn{
-        //   background-color:#394a6d;
-        //   border: 1px solid #394a6d;
-        //   margin-left:40px;
-        // }
-        // .staff_btn{
-        //   background-color:#504658;
-        //   border: 1px solid #504658;
-        //   margin-left:40px;
-        // }
-        // .emergency_btn{
-        //   background-color:#1a2849;
-        //   border: 1px solid #1a2849;
-        //   margin-left:40px;
-        // }
         .oprations_btns {
-          width: 500px;
+          width: 700px;
           margin-left: -80px;
           .staff_btn {
             background-color: rgb(238, 137, 61);
@@ -978,7 +1046,12 @@ this.DealDialogVisible=false;
             border: 1px solid #fe6845;
             margin-left: 40px;
           }
-          .emergency_btn {
+          .emergencyOn_btn {
+            background-color: rgb(207, 79, 90);
+            border: 1px solid rgb(207, 79, 90);
+            margin-left: 40px;
+          }
+            .emergencyOff_btn {
             background-color: rgb(194, 13, 28);
             border: 1px solid rgb(194, 13, 28);
             margin-left: 40px;
@@ -1040,6 +1113,11 @@ this.DealDialogVisible=false;
     font-weight: 600;
     font-size: 15px;
   }
+  .posi_adjust{
+    position: relative;
+    top: 19px;
+    left: 42px;
+  }
   .middle_place1 {
     position: relative;
     top: 17px;
@@ -1058,6 +1136,24 @@ text-align:right;
 margin-right: 61px;
 color:white;
   }
+.search_box {
+          margin-left: 971px;
+    margin-top: -28px;
+      .el-button--mini,
+      .el-button--small {
+        font-size: 12px;
+        border-radius: 0px;
+        margin-left: -6px;
+      }
+      .search {
+        width: 200px;
+      }
+      /deep/.el-input--mini .el-input__inner {
+        height: 28px;
+        line-height: 28px;
+        border-radius: 0px;
+      }
+    }
   .btns_position {
     width: 250px;
     margin: 0 auto;
