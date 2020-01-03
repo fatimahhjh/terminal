@@ -137,7 +137,7 @@
           size="mini"
           type="danger"
            class="white_font"
-          @click="deleteStaff(scope.$index, scope.row)">删除</el-button>
+          @click="deleteStaff(scope.row.united_iden_num)">删除</el-button>
       </template>
     </el-table-column>
 
@@ -161,7 +161,8 @@
   </el-form>
   <div slot="footer" class="dialog-footer">
     <el-button @click="editStaffDialog = false">取 消</el-button>
-    <el-button type="primary" @click="confirmEdit">确 定</el-button>
+    <el-button v-if="staffTitle=='新增使用人员'" type="primary" @click="confirmStaffAdd">确定新增</el-button>
+      <el-button v-else type="primary" @click="confirmStaffEdit">确定修改</el-button>
   </div>
 </el-dialog>
 <!-- 这是公用终端管理的弹框 -->
@@ -425,7 +426,8 @@
   </el-form>
   <div slot="footer" class="dialog-footer">
     <el-button @click="editStaffDialog = false">取 消</el-button>
-    <el-button type="primary" @click="confirmEdit">确 定</el-button>
+    <el-button v-if="termstitle=='新增终端'" @click="confirmTermianlAdd" type="primary">确定新增</el-button>
+    <el-button v-else type="primary" @click="confirmTermianlEdit" >确定修改</el-button>
   </div>
 </el-dialog>
       <!-- 提醒哪些事件处理未成功对话框 -->
@@ -466,10 +468,10 @@ import { format1, format } from "../utils/utils.js";
 import { black } from "color-name";
 import { getCookie } from "../utils/getCookie.js";
 import { getUserInfo } from "../utils/getUserInfo.js";
-import upload from "./upload.vue"
-import search from "./search.vue"
+import upload from "./upload.vue";
+import search from "./search.vue";
 export default {
-  components:{
+  components: {
     upload,
     search
   },
@@ -478,46 +480,46 @@ export default {
       staffDialogVisible: false,
       // 这是控制一线处理对话框显示与否
       DealDialogVisible: false,
-      emergencyOnDialogVisible:false,
-      emergencyOffDialogVisible:false,
+      emergencyOnDialogVisible: false,
+      emergencyOffDialogVisible: false,
       failedDialogVisible: false,
-      multiEmerOnValue:true,
-      multiEmerOffValue:true,
-      status:'',
-      restoreTime:'',
+      multiEmerOnValue: true,
+      multiEmerOffValue: true,
+      status: "",
+      restoreTime: "",
       radio: "",
       tableData: [],
-      filterWord:"",
-      filterResult:[],
-      submitUrl:"/ecc/staff/upload",
-      staffData:[],
-      terminalsData:[],
-      terminalList:[],
-      termstitle:'',
-      staffTitle:'',
-        queryInfo: {
+      filterWord: "",
+      filterResult: [],
+      submitUrl: "/ecc/staff/upload",
+      staffData: [],
+      terminalsData: [],
+      terminalList: [],
+      termstitle: "",
+      staffTitle: "",
+      queryInfo: {
         terminal_ip: ""
       },
-      termType:[],
+      termType: [],
       result_list: [],
-        editStaffDialog: false,
-        editTerminalsDialog:false,
-        terminalsDialogVisible:false,
-        EditStaffform: {
-          name: '',
-          job: '',
-          united_iden_num: '',
-          department: '',
-        },
-         EditTerminalsform: {
-          location: '',
-          terminal_ip: '',
-          terminal_type: '',
-          switch_ip: '',
-          switch_name: '',
-          switch_port: ''
-        },
-        formLabelWidth: '120px',
+      editStaffDialog: false,
+      editTerminalsDialog: false,
+      terminalsDialogVisible: false,
+      EditStaffform: {
+        name: "",
+        job: "",
+        united_iden_num: "",
+        department: ""
+      },
+      EditTerminalsform: {
+        location: "",
+        terminal_ip: "",
+        terminal_type: "",
+        switch_ip: "",
+        switch_name: "",
+        switch_port: ""
+      },
+      formLabelWidth: "120px",
       INC_NUMBER_LIST: [],
       listIncNum: [],
       switch_port: "",
@@ -528,178 +530,281 @@ export default {
   mounted() {
     this.loadData();
   },
-  computed:{
-    terminalsTableList(){
-      if (this.filterWord == '') {
-        return this.tableData
+  computed: {
+    terminalsTableList() {
+      if (this.filterWord == "") {
+        return this.tableData;
       } else {
-        return this.filterResult
+        return this.filterResult;
       }
     }
   },
   methods: {
-      // 查找指定终端
-   onList(_list) {
-     console.log(_list)
+    // 查找指定终端
+    onList(_list) {
+      console.log(_list);
       this.filterResult = _list;
       // this.total = this.list.length;
       // this.pageNum = 1;
     },
     onFilteStr(_filteStr) {
-      console.log(_filteStr)
+      console.log(_filteStr);
       this.filterWord = _filteStr;
     },
     // 管理人员事件
     staffManage() {
-      this.$http.get("/ecc/staff")
-      .then(res=>{
-        console.log(res)
-        let SS=res.data.data
-        this.staffData=SS
-         this.staffDialogVisible = true;
-      })
-      .catch(res=>{
-        this.$message.error("获取人员信息失败！")
-      })
+      this.$http
+        .get("/ecc/staff")
+        .then(res => {
+          console.log(res);
+          let SS = res.data.data;
+          this.staffData = SS;
+          this.staffDialogVisible = true;
+        })
+        .catch(res => {
+          this.$message.error("获取人员信息失败！");
+        });
     },
     // 新增使用人员
-    addStaff(){
-this.staffTitle="新增使用人员"
- this.editStaffDialog=true;
-  this.EditStaffform = Object.assign({},'')
+    addStaff() {
+      this.staffTitle = "新增使用人员";
+      this.editStaffDialog = true;
+      this.EditStaffform = Object.assign({}, "");
     },
     // 确定新增
-    
+
     // 编辑人员信息
-     editStaff(index, row) {
-this.staffTitle="修改使用人员信息"
-        console.log(index, row);
-        this.editStaffDialog=true;
-         let _row = row
-          //将每一行的数据赋值给Dialog弹框（这里是重点）
-        this.EditStaffform = Object.assign({}, _row)
-      },
-      // 删除人员
-      deleteStaff(index, row) {
-        // console.log(index, row);
-          this.$confirm('确认删除该人员信息？, 是否继续?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-           row.splice(index,1)
-          this.$message({
-            type: 'success',
-            message: '删除成功!'
-          });
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消删除'
-          });
-        })
-
-      },
-      // 确认修改使用人员
-      confirmEdit(){
- this.$confirm('确认修改人员信息？', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-        this.$http.post("/ecc/staff",this.EditStaffform)
- .then(res=>{
- if (errmsg = "Success") {
-            this.$message.success("新增人员成功！");
-          } else {
-            this.$message.error("新增人员失败！");
- }}
- )
-.catch(res=>{
-        this.$message.error("新增人员操作出现问题了！")
+    editStaff(index, row) {
+      this.staffTitle = "修改使用人员信息";
+      console.log(index, row);
+      this.editStaffDialog = true;
+      let _row = row;
+      //将每一行的数据赋值给Dialog弹框（这里是重点）
+      this.EditStaffform = Object.assign({}, _row);
+    },
+    // 删除人员
+   async deleteStaff(indenti_num) {
+      console.log(indenti_num);
+    const confirmResult = await this.$confirm("确认删除该人员信息？, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
       })
-          this.staffManage()
-        }).catch(() => {
+      console.log()
+        .then(() => {
           this.$message({
-            type: 'info',
-            message: '已取消修改'
+            type: "success",
+            message: "删除成功!"
           });
-        });
-      },
-      // 终端管理
-    terminalManage() {
-       this.$http.get("device")
-      .then(res=>{
-        let terms=res.data.data
-        this.terminalsData=terms
-         this.terminalsDialogVisible = true;
-      })
-      .catch(res=>{
-        this.$message.error("获取终端信息失败！")
-      })
-    },
-    // 编辑终端
-    editTerminals(index,row){
-      this.termstitle="修改终端信息"
-        this.editTerminalsDialog=true;
-         let _row = row
-          //将每一行的数据赋值给Dialog弹框（这里是重点）
-        this.EditTerminalsform = Object.assign({}, _row)
-
-    },
-    // 新增终端
-addTerms(){
-      this.termstitle="新增终端"
- this.editTerminalsDialog=true;
-
-},
-// 取消应急终端端口开启
-cancleEmerOn(){
-   this.$confirm('确认取消一键应急终端端口开启？, 是否继续?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-         this.emergencyOnDialogVisible=false;
-        })
-         .catch(() => {
-          this.$message({
-            type: 'info',
-            message: '继续一键应急终端端口开启'
-          });
-        });
-},
-// 一键应急开启端口
-    emergencyOnekeyOn() {
-      this.emergencyOnDialogVisible=true
-    },
-    // 一键应急端口关闭
-    emergencyOnekeyOff(){
-this.emergencyOffDialogVisible=true;
-    },
-    // 取消一键应急终端端口关闭
-    cancleEmerOff(){
-   this.$confirm('确认取消一键应急终端端口关闭？, 是否继续?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-         this.emergencyOffDialogVisible=false;
         })
         .catch(() => {
           this.$message({
-            type: 'info',
-            message: '继续一键应急终端端口关闭'
+            type: "info",
+            message: "已取消删除"
+          });
+        });
+    },
+    // 确认新增使用人员
+      confirmStaffAdd() {
+      this.$confirm("确认新增人员信息？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.$http
+            .post("/ecc/staff", this.EditStaffform)
+            .then(res => {
+              if (res.data.errcode =="0") {
+                this.$message.success("新增人员成功！");
+          this.editStaffDialog=false;
+          this.staffManage();
+              } else {
+                this.$message.error("新增人员失败！");
+                this.editStaffDialog=false;
+              }
+            })
+            .catch(res => {
+              this.$message.error("新增人员操作出现问题了！");
+            });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消新增"
+          });
+        });
+    },
+    // 确认修改使用人员
+    confirmStaffEdit() {
+      this.$confirm("确认修改人员信息？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.$http
+            .post("/ecc/staff", this.EditStaffform)
+            .then(res => {
+              if (res.data.errcode =="0") {
+                this.$message.success("修改人员成功！");
+          this.editStaffDialog=false;
+          this.staffManage();
+              } else {
+                this.$message.error("修改人员失败！");
+                this.editStaffDialog=false;
+              }
+            })
+            .catch(res => {
+              this.$message.error("修改人员操作出现问题了！");
+            });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消修改"
+          });
+        });
+    },
+    // 终端管理
+    terminalManage() {
+      this.$http
+        .get("/ecc/device")
+        .then(res => {
+          let terms = res.data.data;
+          this.terminalsData = terms;
+          this.terminalsDialogVisible = true;
+        })
+        .catch(res => {
+          this.$message.error("获取终端信息失败！");
+        });
+    },
+    // 编辑终端
+    editTerminals(index, row) {
+      this.termstitle = "修改终端信息";
+      this.editTerminalsDialog = true;
+      let _row = row;
+      //将每一行的数据赋值给Dialog弹框（这里是重点）
+      this.EditTerminalsform = Object.assign({}, _row);
+    },
+    // 确定终端新增
+confirmTermianlAdd(){
+ this.$confirm("确认新增终端信息？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.$http
+            .post("/ecc/device", this.EditTerminalsform)
+            .then(res => {
+              if (res.data.errcode =="0") {
+                this.$message.success("新增终端成功！");
+          this.editTerminalsDialog=false;
+          this.staffManage();
+              } else {
+                this.$message.error("新增终端失败！");
+                this.editTerminalsDialog=false;
+              }
+            })
+            .catch(res => {
+              this.$message.error("新增终端操作出现问题了！");
+            });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消新增"
           });
         });
 },
+    // 新增终端
+    addTerms() {
+      this.termstitle = "新增终端";
+      this.editTerminalsDialog = true;
+      this.EditTerminalsform = Object.assign({},'');
+    },
+    // 确定终端修改
+    confirmTermianlEdit(){
+ this.$confirm("确认修改终端信息？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.$http
+            .put("/ecc/device", this.EditTerminalsform)
+            .then(res => {
+              if (res.data.errcode =="0") {
+                this.$message.success("修改终端成功！");
+          this.editTerminalsDialog=false;
+          this.staffManage();
+              } else {
+                this.$message.error("修改终端失败！");
+                this.editTerminalsDialog=false;
+              }
+            })
+            .catch(res => {
+              this.$message.error("修改终端操作出现问题了！");
+            });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消修改"
+          });
+        });
+    },
+    // 取消应急终端端口开启
+    cancleEmerOn() {
+      this.$confirm("确认取消一键应急终端端口开启？, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.emergencyOnDialogVisible = false;
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "继续一键应急终端端口开启"
+          });
+        });
+    },
+    
+    // 一键应急开启端口
+    emergencyOnekeyOn() {
+      this.emergencyOnDialogVisible = true;
+    },
+    // 一键应急端口关闭
+    emergencyOnekeyOff() {
+      this.emergencyOffDialogVisible = true;
+    },
+    // 取消一键应急终端端口关闭
+    cancleEmerOff() {
+      this.$confirm("确认取消一键应急终端端口关闭？, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          this.emergencyOffDialogVisible = false;
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "继续一键应急终端端口关闭"
+          });
+        });
+    },
     // 事件发生变化重新请求数据
     // onChange() {
     //   this.loadData();
     // },
     // 取消端口管理
-    canclePortMana(){
-this.DealDialogVisible=false;
+    canclePortMana() {
+      this.DealDialogVisible = false;
     },
     loadData() {
       this.$http
@@ -708,7 +813,7 @@ this.DealDialogVisible=false;
           this.loading = false;
           let list1 = res.data.data;
           this.tableData = list1;
-          this.terminalList=list1;
+          this.terminalList = list1;
         })
         .catch(res => {
           this.$message.error("数据获取失败");
@@ -718,10 +823,10 @@ this.DealDialogVisible=false;
           }, 5000);
         });
     },
-  // 端口开启关闭操作
-    portManage(switch_port,status) {
-            this.DealDialogVisible = true;
-        },
+    // 端口开启关闭操作
+    portManage(switch_port, status) {
+      this.DealDialogVisible = true;
+    },
     // 提交一线处理表单结果
     onSubmit(from) {
       if (this.INC_NUMBER_LIST.length > 0) {
@@ -812,7 +917,7 @@ this.DealDialogVisible=false;
             border: 1px solid rgb(207, 79, 90);
             margin-left: 40px;
           }
-            .emergencyOff_btn {
+          .emergencyOff_btn {
             background-color: rgb(194, 13, 28);
             border: 1px solid rgb(194, 13, 28);
             margin-left: 40px;
@@ -850,14 +955,14 @@ this.DealDialogVisible=false;
     border-radius: 4px;
     min-height: 53px;
   }
-   .middle_place2 {
+  .middle_place2 {
     position: relative;
     top: 7px;
     left: 19px;
     font-weight: 600;
     font-size: 15px;
   }
-  .posi_adjust{
+  .posi_adjust {
     position: relative;
     top: 19px;
     left: 42px;
@@ -875,15 +980,15 @@ this.DealDialogVisible=false;
     top: 17px;
     left: 19px;
   }
-  .addBtns{
-text-align:right;
-margin-right: 61px;
-color:white;
+  .addBtns {
+    text-align: right;
+    margin-right: 61px;
+    color: white;
   }
-.search_box {
-  margin-left: 989px;
+  .search_box {
+    margin-left: 989px;
     margin-top: -37px;
-    }
+  }
   .btns_position {
     width: 250px;
     margin: 0 auto;
