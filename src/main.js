@@ -8,6 +8,7 @@ import store from "./store";
 import '../src/assets/iconfont/fonts/iconfont.css'
 import axios from 'axios'//引入axios
 import Hub from './utils/hub.js'
+let _ = require('lodash')
 // axios.defaults.baseURL="/staff/"
 Vue.prototype.$http = axios;//把axios挂载到vue上
 // 配置请求的根路径

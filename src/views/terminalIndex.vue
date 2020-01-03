@@ -2,27 +2,15 @@
 <template>
   <div class="terminalIndex">
     <div class="breadcrumb">
-      <!-- <el-breadcrumb separator="/">
-        <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
-        <el-breadcrumb-item>事件单列表</el-breadcrumb-item>
-      </el-breadcrumb> -->
     </div>
 
     <div class="el_body" @update="loadData">
       <div class="content_area">
         <div class="nav_area">
-          <!-- <div class="multi_btn">
-            <el-button class="white_font" type="warning" size="medium" @click="multiDeal()"
-              >批量一线处理</el-button
-            >
-            <el-button class="white_font" type="info" size="medium" @click="cancleSelect()"
-              >取消选择</el-button
-            >
-          </div> -->
           <!-- 导航栏操作 -->
           <el-card shadow="always">
             <div class="oprations_btns">
-<upload :submitUrl="submitUrl"></upload>
+              <upload :submitUrl="submitUrl"></upload>
               <el-tag effect="dark" @click="staffManage" class="staff_btn"
                 >使用人员管理</el-tag
               >
@@ -43,32 +31,24 @@
               >
             </div>
             <div class="search_box">
-          <el-input
-            v-model="queryInfo.terminal_ip"
-            class="search"
-            size="mini"
-            placeholder="请输入要查找终端IP"
-          ></el-input>
-          <el-button type="primary" size="mini" @click="queryTerminal"
-            >查找</el-button
-          >
-          <!-- {{$root.Hub.username}} -->
+      <search
+        @list="onList"
+        @filteStr="onFilteStr"
+        :filterDataList="terminalList"
+      ></search>
         </div>
           </el-card>
         </div>
 
         <el-table
-          ref="multipleTable"
-          :data="tableData"
+          :data="terminalsTableList"
           tooltip-effect="dark"
           style="width:100%"
-          @selection-change="handleSelectionChange"
           v-loading="loading"
           element-loading-text="拼命加载中"
           element-loading-spinner="el-icon-loading"
           element-loading-background="rgba(0, 0, 0, 0.8)"
         >
-          <el-table-column type="selection"> </el-table-column>
           <el-table-column type="index" label="序号"> </el-table-column>
           <el-table-column prop="terminal_type" label="终端类型">
           </el-table-column>
@@ -109,15 +89,7 @@
           </el-table-column>
           <el-table-column fixed="right" label="管理状态">
             <template slot-scope="scope">
-              <!-- <el-button
-              type="primary"
-              @click="showData(scope.row.INC_NUMBER)"
-              style=""
-              size="small"
-              >查看</el-button
-            > -->
               <el-button
-                :disabled="multipleSelection.length != 0"
                 class="white_font"
                 type="primary"
                 size="mini"
@@ -168,11 +140,12 @@
           @click="deleteStaff(scope.$index, scope.row)">删除</el-button>
       </template>
     </el-table-column>
+
   </el-table>
       </el-dialog>
 <!-- 这个是修改使用人员信息的弹框 -->
 <el-dialog :title="staffTitle" :visible.sync="editStaffDialog">
-  <el-form :model="EditStaffform">
+  <el-form :model="EditStaffform" ref="form">
     <el-form-item label="姓名" :label-width="formLabelWidth">
       <el-input v-model="EditStaffform.name" autocomplete="off"></el-input>
     </el-form-item>
@@ -251,24 +224,10 @@
         <div class="el_body_dialog">
           <div class="incNumTitle">
             <span id="fontWeightUp">你要对以下端口进行管理</span>
-            <span v-if="multipleSelection.length > 0" id="fontWeightUp"
-              >共{{ multipleSelection.length }}条</span
-            >
-            <span v-else id="fontWeightUp">(共1条)</span>
           </div>
           <el-card shadow="always">
             <div class="incNumshow">
-              <div v-if="multipleSelection.length > 0">
-                <el-button
-                  type="primary"
-                  plain
-                  size="medium"
-                  v-for="(item, index) in INC_NUMBER_LIST"
-                  :key="index"
-                  >{{ item }}</el-button
-                >
-              </div>
-              <div v-else>
+             <div>
                 <el-row>
                   <el-col :span="24"
                     ><div class="grid-content bg-purple-dark">
@@ -287,11 +246,10 @@
                           inactive-color="#ff4949"
                           active-text="开启端口"
                           inactive-text="关闭端口"
-                          active-value="off"
-                          inactive-value="on"
-                      
+                          active-value="on"
+                          inactive-value="off"
                         >
-                        </el-switch> 
+                        </el-switch>
                       </div></div
                   ></el-col>
                   <el-col :span="17" :offset="0"
@@ -333,7 +291,7 @@
           <div class="incNumTitle">
             <span id="fontWeightUp">你要对以下应急端口进行端口开启</span>
             <span id="fontWeightUp"
-              >共{{ multipleSelection.length }}条</span>
+              >共{{ }}条</span>
           </div>
           <el-card shadow="always">
             <div class="incNumshow">
@@ -391,7 +349,7 @@
           <div class="incNumTitle">
             <span id="fontWeightUp">你要对以下应急端口进行端口关闭</span>
             <span id="fontWeightUp"
-              >共{{ multipleSelection.length }}条</span>
+              >共{{ }}条</span>
           </div>
           <el-card shadow="always">
             <div class="incNumshow">
@@ -509,9 +467,11 @@ import { black } from "color-name";
 import { getCookie } from "../utils/getCookie.js";
 import { getUserInfo } from "../utils/getUserInfo.js";
 import upload from "./upload.vue"
+import search from "./search.vue"
 export default {
   components:{
-    upload
+    upload,
+    search
   },
   data() {
     return {
@@ -527,9 +487,12 @@ export default {
       restoreTime:'',
       radio: "",
       tableData: [],
-      submitUrl:"/staff/upload",
+      filterWord:"",
+      filterResult:[],
+      submitUrl:"/ecc/staff/upload",
       staffData:[],
       terminalsData:[],
+      terminalList:[],
       termstitle:'',
       staffTitle:'',
         queryInfo: {
@@ -537,7 +500,6 @@ export default {
       },
       termType:[],
       result_list: [],
-      multipleSelection: [],
         editStaffDialog: false,
         editTerminalsDialog:false,
         terminalsDialogVisible:false,
@@ -566,24 +528,30 @@ export default {
   mounted() {
     this.loadData();
   },
-
+  computed:{
+    terminalsTableList(){
+      if (this.filterWord == '') {
+        return this.tableData
+      } else {
+        return this.filterResult
+      }
+    }
+  },
   methods: {
       // 查找指定终端
-    queryTerminal() {
-      this.$http
-        .get("getnodes", {
-          params: this.queryInfo
-        })
-        .then(res => {
-          console.log(res.data);
-        })
-        .catch(res => {
-          this.$message.error("查找失败！");
-        });
+   onList(_list) {
+     console.log(_list)
+      this.filterResult = _list;
+      // this.total = this.list.length;
+      // this.pageNum = 1;
+    },
+    onFilteStr(_filteStr) {
+      console.log(_filteStr)
+      this.filterWord = _filteStr;
     },
     // 管理人员事件
     staffManage() {
-      this.$http.get("staff")
+      this.$http.get("/ecc/staff")
       .then(res=>{
         console.log(res)
         let SS=res.data.data
@@ -598,7 +566,10 @@ export default {
     addStaff(){
 this.staffTitle="新增使用人员"
  this.editStaffDialog=true;
+  this.EditStaffform = Object.assign({},'')
     },
+    // 确定新增
+    
     // 编辑人员信息
      editStaff(index, row) {
 this.staffTitle="修改使用人员信息"
@@ -636,10 +607,17 @@ this.staffTitle="修改使用人员信息"
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          this.$message({
-            type: 'success',
-            message: '修改成功!',
-          });
+        this.$http.post("/ecc/staff",this.EditStaffform)
+ .then(res=>{
+ if (errmsg = "Success") {
+            this.$message.success("新增人员成功！");
+          } else {
+            this.$message.error("新增人员失败！");
+ }}
+ )
+.catch(res=>{
+        this.$message.error("新增人员操作出现问题了！")
+      })
           this.staffManage()
         }).catch(() => {
           this.$message({
@@ -673,6 +651,7 @@ this.staffTitle="修改使用人员信息"
 addTerms(){
       this.termstitle="新增终端"
  this.editTerminalsDialog=true;
+
 },
 // 取消应急终端端口开启
 cancleEmerOn(){
@@ -711,7 +690,7 @@ this.emergencyOffDialogVisible=true;
           this.$message({
             type: 'info',
             message: '继续一键应急终端端口关闭'
-          });          
+          });
         });
 },
     // 事件发生变化重新请求数据
@@ -724,11 +703,12 @@ this.DealDialogVisible=false;
     },
     loadData() {
       this.$http
-        .get("/terminal")
+        .get("/ecc/terminal")
         .then(res => {
           this.loading = false;
           let list1 = res.data.data;
           this.tableData = list1;
+          this.terminalList=list1;
         })
         .catch(res => {
           this.$message.error("数据获取失败");
@@ -738,40 +718,10 @@ this.DealDialogVisible=false;
           }, 5000);
         });
     },
-    /*多选框被触发
-     多选框被选中时，单个端口管理按钮设置为不可用状态
-     */
-    handleSelectionChange(val) {
-      this.multipleSelection = val;
-    },
-    /*只有多选时才能触发批量处理按钮
-     这是端口管理的对话框事件
-    */
+  // 端口开启关闭操作
     portManage(switch_port,status) {
-      getUserInfo().then(res => {
-        this.username = res.data.username;
-        if (this.username) {
-          this.INC_NUMBER_LIST = [];
-          this.status='';
-          this.status=status;
-          this.switch_port = switch_port;
-          this.DealDialogVisible = true;
-        } else {
-          this.$message.warning("未登录请先登录");
-          return;
-        }
-      });
-    },
-    // 取消一线处理
-    cancle() {
-      this.DealDialogVisible = false;
-      this.$refs.form.resetFields();
-      document.getElementById("validateSuccess1").style.borderColor = "#DCDFE6";
-      document.getElementById("validateSuccess2").style.borderColor = "#DCDFE6";
-      document.getElementById("validateSuccess3").style.borderColor = "#DCDFE6";
-    },
-    // 关闭部分事件处理失败弹框
-    closeFailedDialogclose() {},
+            this.DealDialogVisible = true;
+        },
     // 提交一线处理表单结果
     onSubmit(from) {
       if (this.INC_NUMBER_LIST.length > 0) {
@@ -815,15 +765,6 @@ this.DealDialogVisible=false;
           this.$message.error("请求发送失败");
         }
       });
-    },
-    cancleSelect(rows) {
-      if (rows) {
-        rows.forEach(row => {
-          this.$refs.multipleTable.toggleRowSelection(row);
-        });
-      } else {
-        this.$refs.multipleTable.clearSelection();
-      }
     }
   }
 };
@@ -876,23 +817,6 @@ this.DealDialogVisible=false;
             border: 1px solid rgb(194, 13, 28);
             margin-left: 40px;
           }
-        }
-
-        .datePicker {
-          float: left;
-          margin-left: 16px;
-          margin-top: 13px;
-        }
-        .el-date-editor--daterange.el-input,
-        .el-date-editor--daterange.el-input__inner,
-        .el-date-editor--timerange.el-input,
-        .el-date-editor--timerange.el-input__inner {
-          width: 420px;
-        }
-        .multi_btn {
-          float: right;
-          margin-right: 61px;
-          margin-top: 13px;
         }
       }
     }
@@ -957,22 +881,8 @@ margin-right: 61px;
 color:white;
   }
 .search_box {
-          margin-left: 971px;
-    margin-top: -28px;
-      .el-button--mini,
-      .el-button--small {
-        font-size: 12px;
-        border-radius: 0px;
-        margin-left: -6px;
-      }
-      .search {
-        width: 200px;
-      }
-      /deep/.el-input--mini .el-input__inner {
-        height: 28px;
-        line-height: 28px;
-        border-radius: 0px;
-      }
+  margin-left: 989px;
+    margin-top: -37px;
     }
   .btns_position {
     width: 250px;
@@ -1006,9 +916,6 @@ color:white;
       top: -4px;
       font-size: 14px;
     }
-    .restoreTime {
-      margin-top: -23px;
-    }
     .el-col-12 {
       width: 50%;
       margin-bottom: 20px;
@@ -1029,15 +936,6 @@ color:white;
       position: absolute;
       top: 31px;
       left: 18px;
-    }
-    .el-date-editor.el-input,
-    .el-date-editor.el-input__inner {
-      width: 225px;
-    }
-    .deal_btns {
-      text-align: center;
-      margin-top: 153px;
-      margin-left: 116px;
     }
   }
   .incNumTitle {
