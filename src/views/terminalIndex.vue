@@ -93,7 +93,7 @@
                 class="white_font"
                 type="primary"
                 size="mini"
-                @click="portManage(scope.row.switch_port,scope.row.status)"
+                @click="portManage(scope.row.terminal_ip,scope.row.switch_port,scope.row.status)"
                 >端口管理</el-button
               >
             </template>
@@ -214,25 +214,23 @@
           size="mini"
           type="danger"
            class="white_font"
-          @click="deleteTerminals(scope.$index, scope.row)">删除</el-button>
+          @click="deleteTerminals(scope.row.terminal_ip)">删除</el-button>
       </template>
     </el-table-column>
   </el-table>
       </el-dialog>
 
       <!-- 这个是端口管理的弹窗 -->
-      <el-dialog title="" :visible.sync="DealDialogVisible" width="65%" center>
+      <el-dialog title="" :visible.sync="portOnOffDialogVisible" width="65%" center>
         <div class="el_body_dialog">
           <div class="incNumTitle">
-            <span id="fontWeightUp">你要对以下端口进行管理</span>
+            <span id="fontWeightUp">你要对以下终端的端口进行管理</span>
           </div>
           <el-card shadow="always">
-            <div class="incNumshow">
-             <div>
                 <el-row>
                   <el-col :span="24"
                     ><div class="grid-content bg-purple-dark">
-                      <div class="middle_place1">{{ switch_port }}</div>
+                      <div class="middle_place1">终端 {{terminal_ip}} 的 {{ switch_port }} 端口</div>
                     </div></el-col
                   >
                 </el-row>
@@ -247,8 +245,8 @@
                           inactive-color="#ff4949"
                           active-text="开启端口"
                           inactive-text="关闭端口"
-                          active-value="on"
-                          inactive-value="off"
+                          active-value="off"
+                          inactive-value="on"
                         >
                         </el-switch>
                       </div></div
@@ -281,8 +279,6 @@
                     </div></el-col
                   >
                 </el-row>
-              </div>
-            </div>
           </el-card>
         </div>
       </el-dialog>
@@ -425,7 +421,7 @@
     </el-form-item>
   </el-form>
   <div slot="footer" class="dialog-footer">
-    <el-button @click="editStaffDialog = false">取 消</el-button>
+    <el-button @click="editTerminalsDialog = false">取 消</el-button>
     <el-button v-if="termstitle=='新增终端'" @click="confirmTermianlAdd" type="primary">确定新增</el-button>
     <el-button v-else type="primary" @click="confirmTermianlEdit" >确定修改</el-button>
   </div>
@@ -479,7 +475,7 @@ export default {
     return {
       staffDialogVisible: false,
       // 这是控制一线处理对话框显示与否
-      DealDialogVisible: false,
+      portOnOffDialogVisible: false,
       emergencyOnDialogVisible: false,
       emergencyOffDialogVisible: false,
       failedDialogVisible: false,
@@ -523,6 +519,7 @@ export default {
       INC_NUMBER_LIST: [],
       listIncNum: [],
       switch_port: "",
+      terminal_ip:"",
       username: "",
       loading: true
     };
@@ -542,13 +539,13 @@ export default {
   methods: {
     // 查找指定终端
     onList(_list) {
-      console.log(_list);
+      // console.log(_list);
       this.filterResult = _list;
       // this.total = this.list.length;
       // this.pageNum = 1;
     },
     onFilteStr(_filteStr) {
-      console.log(_filteStr);
+      // console.log(_filteStr);
       this.filterWord = _filteStr;
     },
     // 管理人员事件
@@ -556,7 +553,7 @@ export default {
       this.$http
         .get("/ecc/staff")
         .then(res => {
-          console.log(res);
+          // console.log(res);
           let SS = res.data.data;
           this.staffData = SS;
           this.staffDialogVisible = true;
@@ -571,12 +568,10 @@ export default {
       this.editStaffDialog = true;
       this.EditStaffform = Object.assign({}, "");
     },
-    // 确定新增
-
     // 编辑人员信息
     editStaff(index, row) {
       this.staffTitle = "修改使用人员信息";
-      console.log(index, row);
+      // console.log(index, row);
       this.editStaffDialog = true;
       let _row = row;
       //将每一行的数据赋值给Dialog弹框（这里是重点）
@@ -584,7 +579,7 @@ export default {
     },
     // 删除人员
      deleteStaff(indenti_num) {
-         this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+         this.$confirm('此操作将永久删除该人员, 是否继续?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
@@ -593,6 +588,7 @@ export default {
           .then(res=>{
              if (res.data.errcode =="0") {
                 this.$message.success("人员删除成功！");
+                this.staffManage()
           }else{
           this.$message.error("人员删除失败！");
           }
@@ -652,6 +648,7 @@ export default {
             .then(res => {
               if (res.data.errcode =="0") {
                 this.$message.success("修改人员成功！");
+                this.staffManage()
           this.editStaffDialog=false;
           this.staffManage();
               } else {
@@ -705,7 +702,7 @@ confirmTermianlAdd(){
               if (res.data.errcode =="0") {
                 this.$message.success("新增终端成功！");
           this.editTerminalsDialog=false;
-          this.staffManage();
+          this.terminalManage();
               } else {
                 this.$message.error("新增终端失败！");
                 this.editTerminalsDialog=false;
@@ -722,6 +719,29 @@ confirmTermianlAdd(){
           });
         });
 },
+  // 删除终端
+     deleteTerminals(terminal_ip) {
+         this.$confirm('此操作将永久删除该终端, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$http.delete('/ecc/device?terminal_ip='+terminal_ip)
+          .then(res=>{
+             if (res.data.errcode =="0") {
+                this.$message.success("终端删除成功！");
+                this.terminalManage();
+          }else{
+          this.$message.error("终端删除失败！");
+          }
+          })
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });
+        });
+    },
     // 新增终端
     addTerms() {
       this.termstitle = "新增终端";
@@ -742,7 +762,7 @@ confirmTermianlAdd(){
               if (res.data.errcode =="0") {
                 this.$message.success("修改终端成功！");
           this.editTerminalsDialog=false;
-          this.staffManage();
+          this.terminalManage();
               } else {
                 this.$message.error("修改终端失败！");
                 this.editTerminalsDialog=false;
@@ -808,7 +828,7 @@ confirmTermianlAdd(){
     // },
     // 取消端口管理
     canclePortMana() {
-      this.DealDialogVisible = false;
+      this.portOnOffDialogVisible = false;
     },
     loadData() {
       this.$http
@@ -828,8 +848,11 @@ confirmTermianlAdd(){
         });
     },
     // 端口开启关闭操作
-    portManage(switch_port, status) {
-      this.DealDialogVisible = true;
+    portManage(terminal_ip,switch_port, status) {
+      this.portOnOffDialogVisible = true;
+      this.switch_port=switch_port;
+      this.status=status;
+       this.terminal_ip=terminal_ip;
     },
     // 提交一线处理表单结果
     onSubmit(from) {
@@ -904,11 +927,11 @@ confirmTermianlAdd(){
         width: 100%;
         height: 71px;
         .oprations_btns {
-          width: 700px;
+          width: 800px;
           margin-left: -25px;
           .staff_btn {
-            background-color: rgb(238, 137, 61);
-            border: 1px solid #ffa259;
+            background-color: rgb(231, 116, 21);
+            border: 1px solid rgb(231, 116, 21);
             margin-left: 40px;
           }
           .terminal_btn {
@@ -1057,14 +1080,7 @@ confirmTermianlAdd(){
       font-weight: 600;
     }
   }
-  .incNumshow {
-    .el-button--primary.is-plain {
-      color: #409eff;
-      margin-bottom: 7px;
-      background: #ecf5ff;
-      border-color: #b3d8ff;
-    }
-  }
+
   .failedIncsShow {
     background-color: rgba(245, 108, 108, 0.1);
     border-color: rgba(245, 108, 108, 0.2);

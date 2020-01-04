@@ -12,7 +12,8 @@
       :http-request="upload"
     >
       <div class="uploadBtn">
-        <el-tag effect="dark" class="upload_btn">上传人员信息</el-tag>
+        <el-tag effect="dark" class="uploadStaff_btn">上传人员信息</el-tag>
+        <el-tag effect="dark" class="uploadTerms_btn">上传终端信息</el-tag>
       </div>
     </el-upload>
   </div>
@@ -63,9 +64,14 @@ export default {
   display: inline-block;
   margin: 0 10px;
 }
-.upload_btn {
+.uploadStaff_btn {
   background-color: rgb(207, 155, 75);
   border: 1px solid rgb(207, 155, 75);
-  margin-right: -12px;
+  margin-right: 37px;
+}
+.uploadTerms_btn {
+  background-color: rgb(236, 141, 69);
+  border: 1px solid rgb(236, 141, 69);
+  margin-right: -14px;
 }
 </style>
