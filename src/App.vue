@@ -36,10 +36,9 @@
                   <el-menu-item
                     v-if="!$root.Hub.username"
                     index="1"
-                    @click="login"
                   >
                     <i class="el-icon-user-solid"></i>
-                    登录
+                    未登录
                   </el-menu-item>
                   <el-submenu v-else index="2">
                     <template slot="title" class="login_text">

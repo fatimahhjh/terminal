@@ -145,14 +145,14 @@
       </el-dialog>
 <!-- 这个是修改使用人员信息的弹框 -->
 <el-dialog :title="staffTitle" :visible.sync="editStaffDialog">
-  <el-form :model="EditStaffform" ref="form">
-    <el-form-item label="姓名" :label-width="formLabelWidth">
+  <el-form :model="EditStaffform" :rules="rules"  ref="form">
+    <el-form-item label="姓名" :label-width= "formLabelWidth">
       <el-input v-model="EditStaffform.name" autocomplete="off"></el-input>
     </el-form-item>
     <el-form-item label="岗位" :label-width="formLabelWidth">
       <el-input v-model="EditStaffform.job" autocomplete="off"></el-input>
     </el-form-item>
-    <el-form-item label="统一认证号" :label-width="formLabelWidth">
+    <el-form-item label="统一认证号" :label-width="formLabelWidth" prop="united_iden_num">
       <el-input v-model="EditStaffform.united_iden_num" autocomplete="off"></el-input>
     </el-form-item>
     <el-form-item label="部门" :label-width="formLabelWidth">
@@ -303,17 +303,7 @@
                   <el-col :span="7"
                     ><div class="grid-content bg-purple">
                       <div class="middle_place">
-                        <el-switch
-                         v-model="multiEmerOnValue"
-                          style="display: block"
-                          active-color="#13ce66"
-                          inactive-color="#ff4949"
-                          active-text="开启端口"
-                          inactive-text="关闭端口"
-                          active-value="on"
-                          inactive-value="off"
-                        >
-                        </el-switch> 
+                       <el-radio v-model="multiEmerOnValue">批量开启端口</el-radio>
                       </div></div
                   ></el-col>
                   <el-col :span="17" :offset="0"
@@ -330,8 +320,8 @@
                   <el-col :span="24"
                     ><div class="grid-content bg-purple">
                       <div class="btns_position">
-                        <el-button type="success" size="middle">确认</el-button>
-              <el-button type="info" size="middle" @click="cancleEmerOn">取消</el-button>
+                        <el-button type="success" size="middle">确认开启</el-button>
+              <el-button type="info" size="middle" @click="cancleEmerOn">取消开启</el-button>
                       </div>
                     </div></el-col
                   >
@@ -361,17 +351,7 @@
                   <el-col :span="7"
                     ><div class="grid-content bg-purple">
                       <div class="middle_place">
-                        <el-switch
-                        v-model="multiEmerOffValue"
-                          style="display: block"
-                          active-color="#13ce66"
-                          inactive-color="#ff4949"
-                          active-text="开启端口"
-                          inactive-text="关闭端口"
-                          active-value="on"
-                          inactive-value="off"
-                        >
-                        </el-switch> 
+                       <el-radio v-model="multiEmerOffValue">批量关闭端口</el-radio>
                       </div></div
                   ></el-col>
                   <el-col :span="17" :offset="0"
@@ -388,8 +368,8 @@
                   <el-col :span="24"
                     ><div class="grid-content bg-purple">
                       <div class="btns_position">
-                        <el-button type="success" size="middle">确认</el-button>
-              <el-button type="info" size="middle" @click="cancleEmerOff">取消</el-button>
+                        <el-button type="success" size="middle">确认关闭</el-button>
+              <el-button type="info" size="middle" @click="cancleEmerOff">取消关闭</el-button>
                       </div>
                     </div></el-col
                   >
@@ -472,6 +452,18 @@ export default {
     search
   },
   data() {
+    const checkIdenNum = (rule, value, callback) => {
+      let regNum = /^.{1,20}$/;
+      if (value === '') {
+            callback(new Error('必须输入统一认证号'));
+      } else if (!Number.isInteger(+value)) {
+            callback(new Error('输入数字'));
+      } else if (!regNum.test(value)) {
+            callback(new Error('长度过长'));
+      } else {
+            callback();
+      }
+};
     return {
       staffDialogVisible: false,
       // 这是控制一线处理对话框显示与否
@@ -479,8 +471,8 @@ export default {
       emergencyOnDialogVisible: false,
       emergencyOffDialogVisible: false,
       failedDialogVisible: false,
-      multiEmerOnValue: true,
-      multiEmerOffValue: true,
+      multiEmerOnValue: 'on',
+      multiEmerOffValue: 'off',
       status: "",
       restoreTime: "",
       radio: "",
@@ -493,8 +485,10 @@ export default {
       terminalList: [],
       termstitle: "",
       staffTitle: "",
-      queryInfo: {
-        terminal_ip: ""
+      rules:{
+united_iden_num:[
+{ required: true, validator: checkIdenNum, trigger: "blur" }
+]
       },
       termType: [],
       result_list: [],
