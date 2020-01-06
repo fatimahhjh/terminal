@@ -12,8 +12,7 @@
       :http-request="upload"
     >
       <div class="uploadBtn">
-        <el-tag effect="dark" class="uploadStaff_btn">上传人员信息</el-tag>
-        <el-tag effect="dark" class="uploadTerms_btn">上传终端信息</el-tag>
+        <el-tag effect="dark" :class="upload_btn">{{ title }}</el-tag>
       </div>
     </el-upload>
   </div>
@@ -21,7 +20,7 @@
 
 <script>
 export default {
-  props: ["submitUrl"],
+  props: ["submitUrl", "title", "upload_btn"],
   data() {
     return {
       uploadbeha: false
@@ -67,11 +66,10 @@ export default {
 .uploadStaff_btn {
   background-color: rgb(207, 155, 75);
   border: 1px solid rgb(207, 155, 75);
-  margin-right: 37px;
+  margin-right: 19px;
 }
 .uploadTerms_btn {
   background-color: rgb(236, 141, 69);
   border: 1px solid rgb(236, 141, 69);
-  margin-right: -14px;
 }
 </style>

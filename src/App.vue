@@ -192,10 +192,10 @@ export default {
   },
   mounted() {
     document.cookie = "username";
-    this.username = getCookie("userName");
+    // this.username = getCookie("userName");
     if (this.username = "") {
       window.location.href = "/login?next=" + window.location.href;
-    } 
+    }
   }
 };
 </script>

@@ -10,7 +10,8 @@
           <!-- 导航栏操作 -->
           <el-card shadow="always">
             <div class="oprations_btns">
-              <upload :submitUrl="submitUrl"></upload>
+              <upload :submitUrl="terminalSubmitUrl" :upload_btn="'uploadStaff_btn'" :title="'上传终端信息'"></upload>
+              <upload :submitUrl="staffSubmitUrl" :upload_btn="'uploadTerms_btn'" :title="'上传人员信息'"></upload>
               <el-tag effect="dark" @click="staffManage" class="staff_btn"
                 >使用人员管理</el-tag
               >
@@ -146,21 +147,21 @@
 <!-- 这个是修改使用人员信息的弹框 -->
 <el-dialog :title="staffTitle" :visible.sync="editStaffDialog">
   <el-form :model="EditStaffform" :rules="rules"  ref="form">
-    <el-form-item label="姓名" :label-width= "formLabelWidth">
-      <el-input v-model="EditStaffform.name" autocomplete="off"></el-input>
+    <el-form-item label="姓名" :label-width= "formLabelWidth" prop="name">
+      <el-input v-model.trim="EditStaffform.name" autocomplete="off"></el-input>
     </el-form-item>
-    <el-form-item label="岗位" :label-width="formLabelWidth">
-      <el-input v-model="EditStaffform.job" autocomplete="off"></el-input>
+    <el-form-item label="岗位" :label-width="formLabelWidth" prop="job">
+      <el-input v-model.trim="EditStaffform.job" autocomplete="off"></el-input>
     </el-form-item>
     <el-form-item label="统一认证号" :label-width="formLabelWidth" prop="united_iden_num">
-      <el-input v-model="EditStaffform.united_iden_num" autocomplete="off"></el-input>
+      <el-input v-model.trim="EditStaffform.united_iden_num" autocomplete="off"></el-input>
     </el-form-item>
-    <el-form-item label="部门" :label-width="formLabelWidth">
-      <el-input v-model="EditStaffform.department" autocomplete="off"></el-input>
+    <el-form-item label="部门" :label-width="formLabelWidth" prop="department">
+      <el-input v-model.trim="EditStaffform.department" autocomplete="off"></el-input>
     </el-form-item>
   </el-form>
   <div slot="footer" class="dialog-footer">
-    <el-button @click="editStaffDialog = false">取 消</el-button>
+    <el-button @click="editStaffCancle">取 消</el-button>
     <el-button v-if="staffTitle=='新增使用人员'" type="primary" @click="confirmStaffAdd">确定新增</el-button>
       <el-button v-else type="primary" @click="confirmStaffEdit">确定修改</el-button>
   </div>
@@ -380,28 +381,28 @@
       </el-dialog>
       <!-- 这是编辑终端弹框 -->
       <el-dialog :title="termstitle" :visible.sync="editTerminalsDialog">
-  <el-form :model="EditTerminalsform">
-    <el-form-item label="物理位置" :label-width="formLabelWidth">
-      <el-input v-model="EditTerminalsform.location" autocomplete="off"></el-input>
+  <el-form :model="EditTerminalsform" :rules="rules"  ref="form">
+    <el-form-item label="物理位置" :label-width="formLabelWidth" prop="location">
+      <el-input v-model.trim="EditTerminalsform.location" autocomplete="off"></el-input>
     </el-form-item>
-    <el-form-item label="终端地址" :label-width="formLabelWidth">
-      <el-input v-model="EditTerminalsform.terminal_ip" autocomplete="off"></el-input>
+    <el-form-item label="终端地址" :label-width="formLabelWidth" prop="terminal_ip">
+      <el-input v-model.trim="EditTerminalsform.terminal_ip" autocomplete="off"></el-input>
     </el-form-item>
-    <el-form-item label="终端分类" :label-width="formLabelWidth">
-      <el-input v-model="EditTerminalsform.terminal_type" autocomplete="off"></el-input>
+    <el-form-item label="终端分类" :label-width="formLabelWidth" prop="terminal_type">
+      <el-input v-model.trim="EditTerminalsform.terminal_type" autocomplete="off"></el-input>
     </el-form-item>
-    <el-form-item label="交换机设备IP" :label-width="formLabelWidth">
-      <el-input v-model="EditTerminalsform.switch_ip" autocomplete="off"></el-input>
+    <el-form-item label="交换机设备IP" :label-width="formLabelWidth" prop="switch_ip">
+      <el-input v-model.trim="EditTerminalsform.switch_ip" autocomplete="off"></el-input>
     </el-form-item>
-    <el-form-item label="交换机设备名称" :label-width="formLabelWidth">
-      <el-input v-model="EditTerminalsform.switch_name" autocomplete="off"></el-input>
+    <el-form-item label="交换机设备名称" :label-width="formLabelWidth" prop="switch_name">
+      <el-input v-model.trim="EditTerminalsform.switch_name" autocomplete="off"></el-input>
     </el-form-item>
-    <el-form-item label="交换机接入端口" :label-width="formLabelWidth">
-      <el-input v-model="EditTerminalsform.switch_port" autocomplete="off"></el-input>
+    <el-form-item label="交换机接入端口" :label-width="formLabelWidth" prop="switch_port">
+      <el-input v-model.trim="EditTerminalsform.switch_port" autocomplete="off"></el-input>
     </el-form-item>
   </el-form>
   <div slot="footer" class="dialog-footer">
-    <el-button @click="editTerminalsDialog = false">取 消</el-button>
+    <el-button @click="editStaffCancle">取 消</el-button>
     <el-button v-if="termstitle=='新增终端'" @click="confirmTermianlAdd" type="primary">确定新增</el-button>
     <el-button v-else type="primary" @click="confirmTermianlEdit" >确定修改</el-button>
   </div>
@@ -477,9 +478,11 @@ export default {
       restoreTime: "",
       radio: "",
       tableData: [],
+      portList:[],
       filterWord: "",
       filterResult: [],
-      submitUrl: "/ecc/staff/upload",
+      staffSubmitUrl: "/ecc/staff/upload",
+      terminalSubmitUrl:"/ecc/device/upload",
       staffData: [],
       terminalsData: [],
       terminalList: [],
@@ -488,6 +491,33 @@ export default {
       rules:{
 united_iden_num:[
 { required: true, validator: checkIdenNum, trigger: "blur" }
+],
+name:[
+{ required: true,  message: '请输入人员姓名', trigger: "blur" }
+],
+job:[
+{ required: true,  message: '请输入人员职位', trigger: "blur" }
+],
+department:[
+{ required: true,  message: '请输入人员部门', trigger: "blur" }
+],
+location:[
+{ required: true,  message: '请输入终端的物理位置', trigger: "blur" }
+],
+terminal_ip:[
+{ required: true,  message: '请输入终端ip地址', trigger: "blur" }
+],
+terminal_type:[
+{ required: true,  message: '请输入终端类型', trigger: "blur" }
+],
+switch_ip:[
+{ required: true,  message: '请输入接入交换机设备ip', trigger: "blur" }
+],
+switch_name:[
+{ required: true,  message: '请输入接入交换机设备名称', trigger: "blur" }
+],
+switch_port:[
+{ required: true, validator: this.checkPort, trigger: "blur" }
 ]
       },
       termType: [],
@@ -522,19 +552,33 @@ united_iden_num:[
     this.loadData();
   },
   computed: {
-    terminalsTableList() {
+    terminalsTableList() {  
       if (this.filterWord == "") {
         return this.tableData;
       } else {
         return this.filterResult;
-      }
+        }
     }
   },
   methods: {
+  checkPort(rule, value, callback) {
+   console.log(this.portList);
+   if(value===''){
+callback(new Error('请输入接入交换机设备端口'))
+   }
+   if(this.portList.indexOf(value)==-1){
+callback()
+   }else{
+     this.$message.warning("该端口已存在！")
+   }
+ },
     // 查找指定终端
     onList(_list) {
       // console.log(_list);
       this.filterResult = _list;
+        // console.log(this.filterResult)
+      if(this.filterResult.length==0){
+        this.$message.error("查无此信息，请确认输入内容是否准确！")}
       // this.total = this.list.length;
       // this.pageNum = 1;
     },
@@ -565,11 +609,10 @@ united_iden_num:[
     // 编辑人员信息
     editStaff(index, row) {
       this.staffTitle = "修改使用人员信息";
-      // console.log(index, row);
-      this.editStaffDialog = true;
       let _row = row;
       //将每一行的数据赋值给Dialog弹框（这里是重点）
       this.EditStaffform = Object.assign({}, _row);
+      this.editStaffDialog = true;
     },
     // 删除人员
      deleteStaff(indenti_num) {
@@ -606,12 +649,19 @@ united_iden_num:[
         type: "warning"
       })
         .then(() => {
-          this.$http
+          this.$refs.form.validate(valid=>{
+            if(!valid){
+            this.$message.warning("校验未通过");
+          return;
+            }
+            try{
+             this.$http
             .post("/ecc/staff", this.EditStaffform)
             .then(res => {
               if (res.data.errcode =="0") {
                 this.$message.success("新增人员成功！");
           this.editStaffDialog=false;
+          this.$refs.form.resetFields();
           this.staffManage();
               } else {
                 this.$message.error("新增人员失败！");
@@ -620,7 +670,11 @@ united_iden_num:[
             })
             .catch(res => {
               this.$message.error("新增人员操作出现问题了！");
-            });
+            });}
+            catch(error){
+          this.$message.error("请求发送失败");
+            }
+          })
         })
         .catch(() => {
           this.$message({
@@ -628,6 +682,12 @@ united_iden_num:[
             message: "已取消新增"
           });
         });
+    },
+    // 取消修改人员
+    editStaffCancle(){
+    this.editStaffDialog = false
+    this.editTerminalsDialog = false
+this.$refs.form.resetFields();
     },
     // 确认修改使用人员
     confirmStaffEdit() {
@@ -637,7 +697,13 @@ united_iden_num:[
         type: "warning"
       })
         .then(() => {
-          this.$http
+           this.$refs.form.validate(valid=>{
+              if (!valid) {
+          this.$message.warning("校验未通过");
+          return;
+        }
+        try{
+            this.$http
             .post("/ecc/staff", this.EditStaffform)
             .then(res => {
               if (res.data.errcode =="0") {
@@ -652,7 +718,11 @@ united_iden_num:[
             })
             .catch(res => {
               this.$message.error("修改人员操作出现问题了！");
-            });
+            });}
+            catch(error){
+          this.$message.error("请求发送失败");
+            }
+           })
         })
         .catch(() => {
           this.$message({
@@ -663,7 +733,12 @@ united_iden_num:[
     },
     // 终端管理
     terminalManage() {
-      this.$http
+      this.$http.get('/ecc/auth/system')
+      .then(res=>{
+        if(res.data.errcode=='4105'){
+      this.$message.warning("您没有此权限！");
+        }else{
+  this.$http
         .get("/ecc/device")
         .then(res => {
           let terms = res.data.data;
@@ -673,7 +748,13 @@ united_iden_num:[
         .catch(res => {
           this.$message.error("获取终端信息失败！");
         });
-    },
+    }
+      }
+      )
+      .catch(res=>{
+this.$message.error("访问失败")
+      })
+     },
     // 编辑终端
     editTerminals(index, row) {
       this.termstitle = "修改终端信息";
@@ -690,7 +771,13 @@ confirmTermianlAdd(){
         type: "warning"
       })
         .then(() => {
-          this.$http
+          this.$refs.form.validate(valid=>{
+            if(!valid){
+               this.$message.warning("校验未通过");
+          return;
+            }
+try{
+ this.$http
             .post("/ecc/device", this.EditTerminalsform)
             .then(res => {
               if (res.data.errcode =="0") {
@@ -705,6 +792,11 @@ confirmTermianlAdd(){
             .catch(res => {
               this.$message.error("新增终端操作出现问题了！");
             });
+}
+catch(error){
+          this.$message.error("请求发送失败");
+}
+          })
         })
         .catch(() => {
           this.$message({
@@ -790,7 +882,6 @@ confirmTermianlAdd(){
           });
         });
     },
-    
     // 一键应急开启端口
     emergencyOnekeyOn() {
       this.emergencyOnDialogVisible = true;
@@ -831,6 +922,9 @@ confirmTermianlAdd(){
           this.loading = false;
           let list1 = res.data.data;
           this.tableData = list1;
+          for(let i=0;i<this.tableData.length;i++){
+             this.portList.push(this.tableData[i].switch_port);
+          }        
           this.terminalList = list1;
         })
         .catch(res => {
@@ -921,8 +1015,9 @@ confirmTermianlAdd(){
         width: 100%;
         height: 71px;
         .oprations_btns {
-          width: 800px;
-          margin-left: -25px;
+            width: 807px;
+    margin-left: -13px;
+          margin-left: -14px;
           .staff_btn {
             background-color: rgb(231, 116, 21);
             border: 1px solid rgb(231, 116, 21);
