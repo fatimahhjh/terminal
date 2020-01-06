@@ -31,6 +31,12 @@
                 >一键应急关闭</el-tag
               >
             </div>
+            <div class="refresh">
+              <el-button type="success" size="mini" @click="refreshData">
+                 <i class="el-icon-refresh"></i>
+              </el-button>
+           
+            </div>
             <div class="search_box">
       <search
         @list="onList"
@@ -392,11 +398,21 @@
       <el-input v-model.trim="EditTerminalsform.terminal_type" autocomplete="off"></el-input>
     </el-form-item>
     <el-form-item label="交换机设备IP" :label-width="formLabelWidth" prop="switch_ip">
-      <el-input v-model.trim="EditTerminalsform.switch_ip" autocomplete="off"></el-input>
-    </el-form-item>
-    <el-form-item label="交换机设备名称" :label-width="formLabelWidth" prop="switch_name">
-      <el-input v-model.trim="EditTerminalsform.switch_name" autocomplete="off"></el-input>
-    </el-form-item>
+    <el-select v-model="EditTerminalsform.switch_ip"  @change="autoSelectName" placeholder="请选择交换机设备IP">
+       <el-option
+      v-for="item in switchIpOptions"
+      :key="item.value"
+      :label="item.label"
+      :value="item.value">
+    </el-option>
+    </el-select>
+  </el-form-item>
+      <el-form-item label="交换机设备名称" :label-width="formLabelWidth"  prop="switch_name">
+    <el-select v-model="EditTerminalsform.switch_name" placeholder="请选择交换机设备名称">
+      <el-option label="JD49SW13-M2" value="JD49SW13-M2"></el-option>
+      <el-option label="JD45SW01-M2" value="JD45SW01-M2"></el-option>
+    </el-select>
+  </el-form-item>
     <el-form-item label="交换机接入端口" :label-width="formLabelWidth" prop="switch_port">
       <el-input v-model.trim="EditTerminalsform.switch_port" autocomplete="off"></el-input>
     </el-form-item>
@@ -488,6 +504,13 @@ export default {
       terminalList: [],
       termstitle: "",
       staffTitle: "",
+      switchIpOptions:[{
+         value: '76.7.115.156',
+          label: '76.7.115.156'
+      },{
+         value: '76.7.115.151',
+          label: '76.7.115.151'
+      }],
       rules:{
 united_iden_num:[
 { required: true, validator: checkIdenNum, trigger: "blur" }
@@ -562,14 +585,14 @@ switch_port:[
   },
   methods: {
   checkPort(rule, value, callback) {
-   console.log(this.portList);
+  //  console.log(this.portList);
    if(value===''){
 callback(new Error('请输入接入交换机设备端口'))
    }
    if(this.portList.indexOf(value)==-1){
 callback()
    }else{
-     this.$message.warning("该端口已存在！")
+    callback(new Error("该端口已存在！"))
    }
  },
     // 查找指定终端
@@ -585,6 +608,15 @@ callback()
     onFilteStr(_filteStr) {
       // console.log(_filteStr);
       this.filterWord = _filteStr;
+    },
+    // 交换机ip变了交换机name也变
+    autoSelectName(val){
+// console.log('autoSelectName',val)
+if(val=="76.7.115.151"){
+this.EditTerminalsform.switch_name="JD45SW01-M2"
+}else{
+this.EditTerminalsform.switch_name="JD49SW13-M2"
+}
     },
     // 管理人员事件
     staffManage() {
@@ -935,6 +967,10 @@ catch(error){
           }, 5000);
         });
     },
+    // 刷新数据
+    refreshData(){
+      
+    },
     // 端口开启关闭操作
     portManage(terminal_ip,switch_port, status) {
       this.portOnOffDialogVisible = true;
@@ -1014,6 +1050,12 @@ catch(error){
       .nav_area {
         width: 100%;
         height: 71px;
+        .refresh{
+            top: -28px;
+    width: 20px;
+    right: -931px;
+    position: relative;
+          }
         .oprations_btns {
             width: 807px;
     margin-left: -13px;
@@ -1096,14 +1138,19 @@ catch(error){
     top: 17px;
     left: 19px;
   }
+      /deep/.el-select {
+     display: inline;
+    position: relative;
+}
   .addBtns {
     text-align: right;
     margin-right: 61px;
     color: white;
   }
   .search_box {
-    margin-left: 989px;
-    margin-top: -37px;
+      margin-left: 989px;
+    margin-top: -63px;
+    width: 300px;
   }
   .btns_position {
     width: 250px;
@@ -1123,11 +1170,6 @@ catch(error){
   }
   .form {
     margin-top: 40px;
-    .el-select {
-      display: inline-block;
-      position: relative;
-      width: 82%;
-    }
     .el-textarea {
       position: relative;
       display: inline-block;
