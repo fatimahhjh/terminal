@@ -160,6 +160,7 @@ export default {
   data() {
     return {
       username: "",
+      department:"",
       activeIndex: "1"
     };
   },
@@ -191,8 +192,9 @@ export default {
     }
   },
   mounted() {
-    document.cookie = "username";
-    // this.username = getCookie("userName");
+    document.cookie = "userName='hjh'";
+    this.username = getCookie("userName");
+    this.department=getCookie("department='数据中心网络一部'")
     if (this.username = "") {
       window.location.href = "/login?next=" + window.location.href;
     }

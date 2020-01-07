@@ -9,10 +9,13 @@
       :show-file-list="false"
       content_type
       mutiplepart
+      :disabled="limit == '0' ? false : true"
       :http-request="upload"
     >
       <div class="uploadBtn">
-        <el-tag effect="dark" :class="upload_btn">{{ title }}</el-tag>
+        <el-tag effect="dark" :class="upload_btn" @click="clickUpload">{{
+          title
+        }}</el-tag>
       </div>
     </el-upload>
   </div>
@@ -22,6 +25,7 @@
 export default {
   props: ["submitUrl", "title", "upload_btn"],
   data() {
+    limit: "";
     return {
       uploadbeha: false
     };
@@ -48,6 +52,21 @@ export default {
           } else {
             this.$message.error("数据库插入错误");
           }
+        });
+    },
+    clickUpload() {
+      this.$http
+        .get("/ecc/auth/operation")
+        .then(res => {
+          if (res.data.errcode !== "0") {
+            this.limit = res.data.errcode;
+            this.$message.warning("对不起，您没有此权限！");
+            // console.log(this.limit);
+          } else {
+          }
+        })
+        .catch(res => {
+          this.$message.error("访问失败！");
         });
     }
   }

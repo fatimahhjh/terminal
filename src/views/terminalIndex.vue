@@ -31,10 +31,10 @@
                 >一键应急关闭</el-tag
               >
             </div>
-            <div class="refresh">
-              <el-button type="success" size="mini" @click="refreshData">
+            <div class="refresh"  @click="refreshData">
+              <!-- <el-button type="success" size="mini" @click="refreshData"> -->
                  <i class="el-icon-refresh"></i>
-              </el-button>
+              <!-- </el-button> -->
            
             </div>
             <div class="search_box">
@@ -46,7 +46,7 @@
         </div>
           </el-card>
         </div>
-
+    <!-- 加载终端所有信息 -->
         <el-table
           :data="terminalsTableList"
           tooltip-effect="dark"
@@ -106,6 +106,16 @@
             </template>
           </el-table-column>
         </el-table>
+        <!-- 分页区域 -->
+ <el-pagination
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+      :current-page="pageNum"
+      :page-sizes="[10, 20, 30, 40]"
+      :page-size="pageSize"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="this.totalNum">
+    </el-pagination>
       </div>
       <!-- 这个是管理人员弹窗 -->
       <el-dialog title="使用人员管理" :visible.sync="staffDialogVisible" width="80%">
@@ -247,13 +257,13 @@
                       <div class="middle_place">
                         <el-switch
                           style="display: block"
-                          v-model="status"
+                          v-model="portStatus"
                           active-color="#13ce66"
                           inactive-color="#ff4949"
                           active-text="开启端口"
                           inactive-text="关闭端口"
-                          active-value="off"
-                          inactive-value="on"
+                          active-value="on"
+                          inactive-value="off"
                         >
                         </el-switch>
                       </div></div
@@ -261,11 +271,12 @@
                   <el-col :span="17" :offset="0"
                     ><div class="grid-content bg-purple">
                       <div class="middle_place2">
-                        <el-radio :disabled="status!='off'" v-model="radio" label="永久有效"
+                        <el-radio :disabled="this.portStatus!='off'" v-model="permanent" label="永久有效"
                           >永久有效</el-radio
                         >
-                        <el-radio :disabled="status!='off'" v-model="radio" label="restoreTime"
+                        <el-radio :disabled="this.portStatus!='on'" v-model="timeRange" label="restoreTime"
                           >选取时间段： <el-date-picker
+                                          :disabled="this.portStatus!='on'"
                                           v-model="restoreTime"
                                           type="datetime"
                                           format="yyyy-MM-dd HH:mm"
@@ -280,7 +291,7 @@
                   <el-col :span="24"
                     ><div class="grid-content bg-purple">
                       <div class="btns_position">
-                        <el-button type="success" size="middle">确认</el-button>
+                        <el-button type="success" size="middle" >确认</el-button>
                         <el-button type="info" size="middle" @click="canclePortMana">取消</el-button>
                       </div>
                     </div></el-col
@@ -316,7 +327,7 @@
                   <el-col :span="17" :offset="0"
                     ><div class="grid-content bg-purple">
                       <div class="posi_adjust">
-                        <el-radio v-model="radio" label="永久有效"
+                        <el-radio v-model="permanent" label="永久有效"
                           >永久有效</el-radio
                         >
                       </div>
@@ -364,7 +375,7 @@
                   <el-col :span="17" :offset="0"
                     ><div class="grid-content bg-purple">
                       <div class="posi_adjust">
-                        <el-radio v-model="radio" label="永久有效"
+                        <el-radio v-model="permanent" label="永久有效"
                           >永久有效</el-radio
                         >
                       </div>
@@ -490,9 +501,10 @@ export default {
       failedDialogVisible: false,
       multiEmerOnValue: 'on',
       multiEmerOffValue: 'off',
-      status: "",
+      portStatus: "",
       restoreTime: "",
-      radio: "",
+      permanent: "",
+      timeRange:"",
       tableData: [],
       portList:[],
       filterWord: "",
@@ -544,6 +556,9 @@ switch_port:[
 ]
       },
       termType: [],
+      totalNum: 0,
+      pageNum: 1,
+      pageSize: 10,
       result_list: [],
       editStaffDialog: false,
       editTerminalsDialog: false,
@@ -573,11 +588,15 @@ switch_port:[
   },
   mounted() {
     this.loadData();
+    
   },
   computed: {
-    terminalsTableList() {  
+    terminalsTableList() {
       if (this.filterWord == "") {
-        return this.tableData;
+        // return this.tableData;
+         let end = this.pageNum * this.pageSize;
+      let start = end - this.pageSize;
+      return this.tableData.slice(start, end);
       } else {
         return this.filterResult;
         }
@@ -618,6 +637,18 @@ this.EditTerminalsform.switch_name="JD45SW01-M2"
 this.EditTerminalsform.switch_name="JD49SW13-M2"
 }
     },
+    // 监听每页显示多少条信息
+     handleSizeChange(newSize) {
+        // console.log(`每页 ${newSize} 条`);
+        this.pageSize=newSize;
+        this.loadData()
+      },
+      handleCurrentChange(newPage) {
+        // console.log(`当前页: ${newPage}`);
+        this.pageNum=newPage;
+        this.loadData()
+
+      },
     // 管理人员事件
     staffManage() {
       this.$http
@@ -954,9 +985,10 @@ catch(error){
           this.loading = false;
           let list1 = res.data.data;
           this.tableData = list1;
+          this.totalNum=res.data.total
           for(let i=0;i<this.tableData.length;i++){
              this.portList.push(this.tableData[i].switch_port);
-          }        
+          }
           this.terminalList = list1;
         })
         .catch(res => {
@@ -969,14 +1001,25 @@ catch(error){
     },
     // 刷新数据
     refreshData(){
-      
+    this.$http.get('/ecc/terminal/real/data')
+    .then(res => {
+          this.loading = false;
+          let list1 = res.data.data;
+          this.tableData = list1;})
     },
     // 端口开启关闭操作
     portManage(terminal_ip,switch_port, status) {
-      this.portOnOffDialogVisible = true;
+      this.$http.get('/ecc/auth/manager')
+.then(res=>{
+  if(res.data.errcode=='4105'){
+         this.$message.warning("对不起，您没有此权限！");
+  }else{
+     this.portOnOffDialogVisible = true;
       this.switch_port=switch_port;
       this.status=status;
        this.terminal_ip=terminal_ip;
+  }
+})
     },
     // 提交一线处理表单结果
     onSubmit(from) {
@@ -1051,10 +1094,19 @@ catch(error){
         width: 100%;
         height: 71px;
         .refresh{
-            top: -28px;
-    width: 20px;
-    right: -931px;
-    position: relative;
+            top: -32px;
+            width: 33px;
+            right: -931px;
+            height: 33px;
+            background-color: #24be24;
+            border-radius: 50%;
+            position: relative;
+            .el-icon-refresh:before {
+            content: "\e6d0";
+            position: absolute;
+            top: 9px;
+            right: 8px;
+        }
           }
         .oprations_btns {
             width: 807px;
@@ -1149,7 +1201,7 @@ catch(error){
   }
   .search_box {
       margin-left: 989px;
-    margin-top: -63px;
+    margin-top: -69px;
     width: 300px;
   }
   .btns_position {
