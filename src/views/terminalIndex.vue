@@ -157,8 +157,16 @@
           @click="deleteStaff(scope.row.united_iden_num,scope.row.department)">删除</el-button>
       </template>
     </el-table-column>
-
   </el-table>
+   <el-pagination
+      @size-change="handleSizeChange2"
+      @current-change="handleCurrentChange2"
+      :current-page="pageNum"
+      :page-sizes="[10, 20, 30, 40]"
+      :page-size="pageSize"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="this.totalStaffNum">
+    </el-pagination>
       </el-dialog>
 <!-- 这个是修改使用人员信息的弹框 -->
 <el-dialog :title="staffTitle" :visible.sync="editStaffDialog">
@@ -186,7 +194,7 @@
 
   <el-dialog title="公用终端管理" :visible.sync="terminalsDialogVisible" width="80%">
     <div class="addBtns"> <el-button type="success" size="mini" @click="addTerms" class="white_font">新增终端</el-button></div>
-    
+
         <el-table
     :data="terminalsData"
     style="width: 100%">
@@ -235,6 +243,15 @@
       </template>
     </el-table-column>
   </el-table>
+   <el-pagination
+      @size-change="handleSizeChange3"
+      @current-change="handleCurrentChange3"
+      :current-page="pageNum"
+      :page-sizes="[10, 20, 30, 40]"
+      :page-size="pageSize"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="this.totalTermsNum">
+    </el-pagination>
       </el-dialog>
 
       <!-- 这个是端口管理的弹窗 -->
@@ -257,7 +274,7 @@
                       <div class="middle_place">
                         <el-switch
                           style="display: block"
-                          v-model="portStatus"
+                          v-model="EditTerminalsform.status"
                           active-color="#13ce66"
                           inactive-color="#ff4949"
                           active-text="开启端口"
@@ -557,6 +574,8 @@ switch_port:[
       },
       termType: [],
       totalNum: 0,
+      totalStaffNum:0,
+      totalTermsNum:0,
       pageNum: 1,
       pageSize: 10,
       result_list: [],
@@ -656,7 +675,26 @@ this.EditTerminalsform.switch_name="JD49SW13-M2"
         // console.log(`当前页: ${newPage}`);
         this.pageNum=newPage;
         this.loadData()
-
+      },
+      handleSizeChange2(newSize) {
+        // console.log(`每页 ${newSize} 条`);
+        this.pageSize=newSize;
+        this.staffManage()
+      },
+      handleCurrentChange2(newPage) {
+        // console.log(`当前页: ${newPage}`);
+        this.pageNum=newPage;
+        this.staffManage()
+      },
+      handleSizeChange3(newSize) {
+        // console.log(`每页 ${newSize} 条`);
+        this.pageSize=newSize;
+        this.terminalManage()
+      },
+      handleCurrentChange3(newPage) {
+        // console.log(`当前页: ${newPage}`);
+        this.pageNum=newPage;
+        this.terminalManage()
       },
     // 管理人员事件
     staffManage() {
@@ -665,7 +703,10 @@ this.EditTerminalsform.switch_name="JD49SW13-M2"
         .then(res => {
           // console.log(res);
           let SS = res.data.data;
-          this.staffData = SS;
+          this.totalStaffNum=res.data.total
+          let end = this.pageNum * this.pageSize;
+          let start = end - this.pageSize;
+          this.staffData = SS.slice(start, end);
           this.staffDialogVisible = true;
         })
         .catch(res => {
@@ -827,7 +868,10 @@ this.$refs.form.resetFields();
         .get("/ecc/device")
         .then(res => {
           let terms = res.data.data;
-          this.terminalsData = terms;
+          this.totalTermsNum=res.data.total
+          let end = this.pageNum * this.pageSize;
+          let start = end - this.pageSize;
+          this.terminalsData = terms.slice(start, end);
           this.terminalsDialogVisible = true;
         })
         .catch(res => {
@@ -992,10 +1036,6 @@ catch(error){
           });
         });
     },
-    // 事件发生变化重新请求数据
-    // onChange() {
-    //   this.loadData();
-    // },
     // 取消端口管理
     canclePortMana() {
       this.portOnOffDialogVisible = false;
@@ -1042,50 +1082,6 @@ catch(error){
        this.terminal_ip=terminal_ip;
   }
 })
-    },
-    // 提交一线处理表单结果
-    onSubmit(from) {
-      if (this.INC_NUMBER_LIST.length > 0) {
-        this.sizeForm.listIncNum = this.INC_NUMBER_LIST;
-      } else {
-        this.sizeForm.listIncNum = this.INC_NUMBER.split(",");
-      }
-
-      this.$refs.form.validate(async valid => {
-        if (!valid) {
-          this.$message.warning("校验未通过");
-          return;
-        }
-        try {
-          let {
-            data: { status, result_list }
-          } = await this.$http.post("answerIncs", this.sizeForm);
-          if (status != "success") {
-            this.$message.error("一线处理失败！");
-          } else {
-            this.$emit("update");
-            if (result_list.length > 0) {
-              this.failedDialogVisible = true;
-              this.result_list = result_list;
-              this.$message.warning("一线处理部分事件成功！");
-            } else {
-              this.$message.success("一线处理成功！");
-            }
-          }
-          this.DealDialogVisible = false;
-          this.$refs.form.resetFields();
-          document.getElementById("validateSuccess1").style.borderColor =
-            "#DCDFE6";
-          document.getElementById("validateSuccess2").style.borderColor =
-            "#DCDFE6";
-          document.getElementById("validateSuccess3").style.borderColor =
-            "#DCDFE6";
-          this.loadData();
-        } catch (error) {
-          console.log(error);
-          this.$message.error("请求发送失败");
-        }
-      });
     }
   }
 };
