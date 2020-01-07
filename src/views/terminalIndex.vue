@@ -35,7 +35,6 @@
               <!-- <el-button type="success" size="mini" @click="refreshData"> -->
                  <i class="el-icon-refresh"></i>
               <!-- </el-button> -->
-           
             </div>
             <div class="search_box">
       <search
@@ -274,7 +273,7 @@
                       <div class="middle_place">
                         <el-switch
                           style="display: block"
-                          v-model="EditTerminalsform.status"
+                          v-model="portStatus"
                           active-color="#13ce66"
                           inactive-color="#ff4949"
                           active-text="开启端口"
@@ -288,18 +287,20 @@
                   <el-col :span="17" :offset="0"
                     ><div class="grid-content bg-purple">
                       <div class="middle_place2">
-                        <el-radio :disabled="this.portStatus!='off'" v-model="permanent" label="永久有效"
+                        <el-radio :disabled="this.portStatus!='on'" v-model="permanent" label="永久有效"
                           >永久有效</el-radio
                         >
-                        <el-radio :disabled="this.portStatus!='on'" v-model="timeRange" label="restoreTime"
-                          >选取时间段： <el-date-picker
-                                          :disabled="this.portStatus!='on'"
-                                          v-model="restoreTime"
+                        <el-radio :disabled="this.portStatus!='on'" v-model="pickTime" label="永久有效"
+                          >
+                        <el-date-picker
+                                          :disabled="this.portStatus!='on'||this.permanent=='永久有效'"
+                                          v-model="timeRange"
                                           type="datetime"
                                           format="yyyy-MM-dd HH:mm"
-                                          placeholder="选择日期时间">
+                                          placeholder="选择时间段">
                                       </el-date-picker>
-                                      </el-radio>
+                                      </el-radio
+                        >
                       </div>
                     </div></el-col
                   >
@@ -521,6 +522,7 @@ export default {
       portStatus: "",
       restoreTime: "",
       permanent: "",
+      pickTime:"",
       timeRange:"",
       tableData: [],
       portList:[],
@@ -1078,7 +1080,7 @@ catch(error){
   }else{
      this.portOnOffDialogVisible = true;
       this.switch_port=switch_port;
-      this.status=status;
+      this.portStatus=status;
        this.terminal_ip=terminal_ip;
   }
 })
@@ -1114,10 +1116,10 @@ catch(error){
         .refresh{
             top: -32px;
             width: 33px;
-            right: -931px;
-            height: 33px;
-            background-color: #24be24;
-            border-radius: 50%;
+            right: -941px;
+            height: 34px;
+            background-color: #35b7ce;
+            border-radius: 25%;
             position: relative;
             .el-icon-refresh:before {
             content: "\e6d0";
