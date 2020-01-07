@@ -287,17 +287,19 @@
                   <el-col :span="17" :offset="0"
                     ><div class="grid-content bg-purple">
                       <div class="middle_place2">
-                        <el-radio :disabled="this.portStatus!='on'" v-model="permanent" label="永久有效"
+                        <el-radio :disabled="this.portStatus!='on'" v-model="pickTime" label="永久有效"
                           >永久有效</el-radio
                         >
-                        <el-radio :disabled="this.portStatus!='on'" v-model="pickTime" label="永久有效"
+                        <el-radio :disabled="this.portStatus!='on'" v-model="pickTime" label="选择时间段"
                           >
                         <el-date-picker
-                                          :disabled="this.portStatus!='on'||this.permanent=='永久有效'"
+                                          :disabled="this.portStatus!='on'||this.pickTime!=='选择时间段'"
                                           v-model="timeRange"
-                                          type="datetime"
+                                          type="datetimerange"
                                           format="yyyy-MM-dd HH:mm"
-                                          placeholder="选择时间段">
+                                          start-placeholder="开始日期"
+                                          end-placeholder="结束日期"
+                                         >
                                       </el-date-picker>
                                       </el-radio
                         >
@@ -309,7 +311,7 @@
                   <el-col :span="24"
                     ><div class="grid-content bg-purple">
                       <div class="btns_position">
-                        <el-button type="success" size="middle" >确认</el-button>
+                        <el-button type="success" size="middle" @click="confirmPortOnOff" >确认</el-button>
                         <el-button type="info" size="middle" @click="canclePortMana">取消</el-button>
                       </div>
                     </div></el-col
@@ -1071,7 +1073,20 @@ catch(error){
           let list1 = res.data.data;
           this.tableData = list1;})
     },
-    // 端口开启关闭操作
+    // 确认开关端口
+    confirmPortOnOff(){
+    this.$http.put('',{
+      status:this.portStatus,
+      available_time:this.timeRange
+    })
+    .then(res=>{
+
+    })
+    .catch(res=>{
+      this.$message.error("访问失败！")
+    })
+    },
+    // 端口开启关闭弹框
     portManage(terminal_ip,switch_port, status) {
       this.$http.get('/ecc/auth/manager')
 .then(res=>{
