@@ -154,7 +154,7 @@
           size="mini"
           type="danger"
            class="white_font"
-          @click="deleteStaff(scope.row.united_iden_num)">删除</el-button>
+          @click="deleteStaff(scope.row.united_iden_num,scope.row.department)">删除</el-button>
       </template>
     </el-table-column>
 
@@ -534,7 +534,7 @@ job:[
 { required: true,  message: '请输入人员职位', trigger: "blur" }
 ],
 department:[
-{ required: true,  message: '请输入人员部门', trigger: "blur" }
+{ required: true,  validator: this.checkDepartment, trigger: "blur" }
 ],
 location:[
 { required: true,  message: '请输入终端的物理位置', trigger: "blur" }
@@ -603,8 +603,17 @@ switch_port:[
     }
   },
   methods: {
+    checkDepartment(rule, value, callback) {
+   if(value===''|| value==undefined){
+callback(new Error('请输入部门'))
+   }
+   else if(this.$root.Hub.department!==value){
+callback(new Error('您没有权限新增该部门人员信息！'))
+   }else{
+    callback()
+   }
+ },
   checkPort(rule, value, callback) {
-  //  console.log(this.portList);
    if(value===''){
 callback(new Error('请输入接入交换机设备端口'))
    }
@@ -671,15 +680,27 @@ this.EditTerminalsform.switch_name="JD49SW13-M2"
     },
     // 编辑人员信息
     editStaff(index, row) {
+      // console.log(index,row)
       this.staffTitle = "修改使用人员信息";
       let _row = row;
-      //将每一行的数据赋值给Dialog弹框（这里是重点）
+      if(this.$root.Hub.department=="数据中心运行一部" && _row.department=="数据中心网络一部"){
+        this.$message.warning("您没有权限修改网络一部人员信息！")
+      }else if(this.$root.Hub.department=="数据中心网络一部" && _row.department=="数据中心运行一部"){
+        this.$message.warning("您没有权限修改运行一部人员信息！")
+      }else{
       this.EditStaffform = Object.assign({}, _row);
       this.editStaffDialog = true;
+      }
+
+      //将每一行的数据赋值给Dialog弹框（这里是重点）
+    
     },
     // 删除人员
-     deleteStaff(indenti_num) {
-         this.$confirm('此操作将永久删除该人员, 是否继续?', '提示', {
+     deleteStaff(indenti_num,department) {
+ if(this.$root.Hub.department !== department){
+        this.$message.warning("您没有权限删除该部人员信息！")
+      }else{
+        this.$confirm('此操作将永久删除该人员, 是否继续?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
@@ -703,6 +724,7 @@ this.EditTerminalsform.switch_name="JD49SW13-M2"
             message: '已取消删除'
           });
         });
+      }
     },
     // 确认新增使用人员
       confirmStaffAdd() {

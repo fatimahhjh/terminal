@@ -9,7 +9,7 @@
       :show-file-list="false"
       content_type
       mutiplepart
-      :disabled="limit == '0' ? false : true"
+      :disabled="this.limit == '0' ? false : true"
       :http-request="upload"
     >
       <div class="uploadBtn">
@@ -25,9 +25,9 @@
 export default {
   props: ["submitUrl", "title", "upload_btn"],
   data() {
-    limit: "";
     return {
-      uploadbeha: false
+      uploadbeha: false,
+      limit: ""
     };
   },
   methods: {
@@ -61,8 +61,9 @@ export default {
           if (res.data.errcode !== "0") {
             this.limit = res.data.errcode;
             this.$message.warning("对不起，您没有此权限！");
-            // console.log(this.limit);
           } else {
+            this.limit = res.data.errcode;
+            // console.log(this.limit);
           }
         })
         .catch(res => {

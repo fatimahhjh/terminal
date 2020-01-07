@@ -159,8 +159,6 @@ import { getUserInfo } from "./utils/getUserInfo.js";
 export default {
   data() {
     return {
-      username: "",
-      department:"",
       activeIndex: "1"
     };
   },
@@ -192,11 +190,12 @@ export default {
     }
   },
   mounted() {
-    document.cookie = "userName='hjh'";
-    this.username = getCookie("userName");
-    this.department=getCookie("department='数据中心网络一部'")
-    if (this.username = "") {
-      window.location.href = "/login?next=" + window.location.href;
+    document.cookie = "username=hjhhhhh";
+    document.cookie = "department=数据中心网络一部";
+    this.$root.Hub.username = getCookie("username");
+    this.$root.Hub.department=getCookie("department")
+    if (this.$root.Hub.username == "") {
+     this.login()
     }
   }
 };
