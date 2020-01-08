@@ -1037,11 +1037,55 @@ catch(error){
     },
     // 一键应急开启端口
     emergencyOnekeyOn() {
-      this.emergencyOnDialogVisible = true;
+       this.$http
+        .get("/ecc/auth/manager")
+        .then(res => {
+          if (res.data.errcode == "4105") {
+            this.$message.warning("对不起，您没有此权限！");
+          } else {
+      // this.emergencyOnDialogVisible = true;
+       this.$confirm('正在启动应急终端端口，请等待...', '一键式启动应急终端端口中', {
+          cancelButtonText: '关闭弹框',
+          type: 'warning',
+          showConfirmButton:false,
+          center: true
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已关闭一键式启动应急终端端口弹框'
+          });
+        });
+          }
+        })
+        .catch(res => {
+          this.$message.error("访问失败！");
+        });
     },
     // 一键应急端口关闭
     emergencyOnekeyOff() {
-      this.emergencyOffDialogVisible = true;
+        this.$http
+        .get("/ecc/auth/manager")
+        .then(res => {
+          if (res.data.errcode == "4105") {
+            this.$message.warning("对不起，您没有此权限！");
+          } else {
+          // this.emergencyOffDialogVisible = true;
+          this.$confirm('正在关闭应急终端端口，请等待...', '一键式关闭应急终端端口中', {
+          cancelButtonText: '关闭弹框',
+          type: 'warning',
+          showConfirmButton:false,
+          center: true
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已关闭一键式关闭应急终端端口弹框'
+          });
+        });
+          }
+        })
+        .catch(res => {
+          this.$message.error("访问失败！");
+        });
     },
     // 取消一键应急终端端口关闭
     cancleEmerOff() {
@@ -1102,10 +1146,20 @@ catch(error){
       })
         .then(() => {
           // console.log(this.timeRange,"kkk")
-          if(this.timeRange=="" && this.portStatus=="on"){
+          if(this.timeRange=="" && this.portStatus=="on" && this.pickTime=='选择时间段'){
             this.$message.warning("请选择开启端口的时间段!")
           }else{
-             var obj={
+      var obj1={
+      status:this.portStatus,
+      available_time:this.pickTime,
+      switch_ip:this.switch_ip,
+      terminal_ip:this.terminal_ip,
+      location:this.location,
+      switch_name:this.switch_name,
+      switch_port:this.switch_port,
+      terminal_type:this.terminal_type
+    }
+             var obj2={
       status:this.portStatus,
       available_time:this.timeRange,
       switch_ip:this.switch_ip,
@@ -1115,7 +1169,8 @@ catch(error){
       switch_port:this.switch_port,
       terminal_type:this.terminal_type
     }
-          this.$http.put('/ecc/terminal',obj)
+    if(this.pickTime=='选择时间段'){
+      this.$http.put('/ecc/terminal',obj2)
     .then(res=>{
         if (res.data.errcode !== "0") {
             this.$message.error("端口操作失败！");
@@ -1123,13 +1178,30 @@ catch(error){
             this.$message.success("端口操作成功！");
             this.portOnOffDialogVisible=false
             this.loadData()
-            console.log(obj)
+            console.log(obj2)
+          }
+    })
+     .catch(res=>{
+      this.$message.error("访问失败！")
+    })
+          }
+          else{
+              this.$http.put('/ecc/terminal',obj1)
+    .then(res=>{
+        if (res.data.errcode !== "0") {
+            this.$message.error("端口操作失败！");
+          } else {
+            this.$message.success("端口操作成功！");
+            this.portOnOffDialogVisible=false
+            this.loadData()
+            console.log(obj1)
           }
     })
     .catch(res=>{
       this.$message.error("访问失败！")
     })
           }
+    }
         })
         .catch(() => {
           this.$message({
