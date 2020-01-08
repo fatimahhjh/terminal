@@ -1102,7 +1102,7 @@ catch(error){
       })
         .then(() => {
           // console.log(this.timeRange,"kkk")
-          if(this.timeRange==""){
+          if(this.timeRange=="" && this.portStatus=="on"){
             this.$message.warning("请选择开启端口的时间段!")
           }else{
              var obj={
