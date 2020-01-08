@@ -9,11 +9,10 @@
       :show-file-list="false"
       content_type
       mutiplepart
-      :disabled="this.limit == '0' ? false : true"
       :http-request="upload"
     >
       <div class="uploadBtn">
-        <el-tag effect="dark" :class="upload_btn" @click="clickUpload">{{
+        <el-tag effect="dark" :class="upload_btn">{{
           title
         }}</el-tag>
       </div>
@@ -27,7 +26,6 @@ export default {
   data() {
     return {
       uploadbeha: false,
-      limit: ""
     };
   },
   methods: {
@@ -54,22 +52,22 @@ export default {
           }
         });
     },
-    clickUpload() {
-      this.$http
-        .get("/ecc/auth/operation")
-        .then(res => {
-          if (res.data.errcode !== "0") {
-            this.limit = res.data.errcode;
-            this.$message.warning("对不起，您没有此权限！");
-          } else {
-            this.limit = res.data.errcode;
-            // console.log(this.limit);
-          }
-        })
-        .catch(res => {
-          this.$message.error("访问失败！");
-        });
-    }
+    // clickUpload() {
+    //   this.$http
+    //     .get("/ecc/auth/operation")
+    //     .then(res => {
+    //       if (res.data.errcode !== "0") {
+    //         this.limit = res.data.errcode;
+    //         this.$message.warning("对不起，您没有此权限！");
+    //       } else {
+    //         this.limit = res.data.errcode;
+    //         // console.log(this.limit);
+    //       }
+    //     })
+    //     .catch(res => {
+    //       this.$message.error("访问失败！");
+    //     });
+    // }
   }
   // 文件失败
   // onError(response) {
@@ -84,12 +82,14 @@ export default {
   margin: 0 10px;
 }
 .uploadStaff_btn {
-  background-color: rgb(207, 155, 75);
-  border: 1px solid rgb(207, 155, 75);
-  margin-right: 19px;
+  background-color: rgb(236, 141, 69);
+  border: 1px solid rgb(236, 141, 69);
+      height: 28px;
+
 }
 .uploadTerms_btn {
   background-color: rgb(236, 141, 69);
   border: 1px solid rgb(236, 141, 69);
+      height: 28px;
 }
 </style>

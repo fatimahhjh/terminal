@@ -10,8 +10,6 @@
           <!-- 导航栏操作 -->
           <el-card shadow="always">
             <div class="oprations_btns">
-              <upload :submitUrl="terminalSubmitUrl" :upload_btn="'uploadStaff_btn'" :title="'上传终端信息'"></upload>
-              <upload :submitUrl="staffSubmitUrl" :upload_btn="'uploadTerms_btn'" :title="'上传人员信息'"></upload>
               <el-tag effect="dark" @click="staffManage" class="staff_btn"
                 >使用人员管理</el-tag
               >
@@ -99,7 +97,7 @@
                 class="white_font"
                 type="primary"
                 size="mini"
-                @click="portManage(scope.row.terminal_ip,scope.row.switch_port,scope.row.status)"
+                @click="portManage(scope.row.terminal_ip,scope.row.location,scope.row.switch_ip,scope.row.switch_name,scope.row.terminal_type,scope.row.switch_port,scope.row.status)"
                 >端口管理</el-button
               >
             </template>
@@ -118,7 +116,12 @@
       </div>
       <!-- 这个是管理人员弹窗 -->
       <el-dialog title="使用人员管理" :visible.sync="staffDialogVisible" width="80%">
-    <div class="addBtns"> <el-button type="success" size="mini" @click="addStaff" class="white_font">新增使用人员</el-button></div>
+   <div class="multiUpload">
+              <upload :submitUrl="staffSubmitUrl" :upload_btn="'uploadTerms_btn'" :title="'批量上传新增人员'"></upload>
+   </div>
+    <div class="addBtns"> 
+      <el-button type="success" size="mini" @click="addStaff" class="white_font">新增使用人员</el-button>
+      </div>
         <el-table
     :data="staffData"
     style="width: 100%">
@@ -180,7 +183,7 @@
       <el-input v-model.trim="EditStaffform.united_iden_num" autocomplete="off"></el-input>
     </el-form-item>
     <el-form-item label="部门" :label-width="formLabelWidth" prop="department">
-      <el-input v-model.trim="EditStaffform.department" autocomplete="off"></el-input>
+      <el-input v-model.trim="EditStaffform.department" placeholder="请输入数据中心xxx部" autocomplete="off"></el-input>
     </el-form-item>
   </el-form>
   <div slot="footer" class="dialog-footer">
@@ -192,6 +195,9 @@
 <!-- 这是公用终端管理的弹框 -->
 
   <el-dialog title="公用终端管理" :visible.sync="terminalsDialogVisible" width="80%">
+    <div class="multiUpload">
+              <upload :submitUrl="terminalSubmitUrl" :upload_btn="'uploadStaff_btn'" :title="'批量上传新增终端'"></upload>
+    </div>
     <div class="addBtns"> <el-button type="success" size="mini" @click="addTerms" class="white_font">新增终端</el-button></div>
 
         <el-table
@@ -297,6 +303,7 @@
                                           v-model="timeRange"
                                           type="datetimerange"
                                           format="yyyy-MM-dd HH:mm"
+                                          value-format="yyyy-MM-dd HH:mm"
                                           start-placeholder="开始日期"
                                           end-placeholder="结束日期"
                                          >
@@ -605,6 +612,10 @@ switch_port:[
       listIncNum: [],
       switch_port: "",
       terminal_ip:"",
+      location:"",
+      switch_ip:"",
+      switch_name:"",
+      terminal_type:"",
       username: "",
       loading: true
     };
@@ -702,7 +713,10 @@ this.EditTerminalsform.switch_name="JD49SW13-M2"
       },
     // 管理人员事件
     staffManage() {
-      this.$http
+      this.$http.get('/ecc/auth/operation')
+      .then(res=>{
+        if(res.data.errcode==0){
+   this.$http
         .get("/ecc/staff")
         .then(res => {
           // console.log(res);
@@ -716,6 +730,11 @@ this.EditTerminalsform.switch_name="JD49SW13-M2"
         .catch(res => {
           this.$message.error("获取人员信息失败！");
         });
+        }else{
+          this.$message.warning("对不起，您无操作权限！")
+        }
+      })
+   
     },
     // 新增使用人员
     addStaff() {
@@ -980,6 +999,7 @@ catch(error){
             .then(res => {
               if (res.data.errcode =="0") {
                 this.$message.success("修改终端成功！");
+                // console.log(this.EditTerminalsform)
           this.editTerminalsDialog=false;
           this.terminalManage();
               } else {
@@ -1075,19 +1095,52 @@ catch(error){
     },
     // 确认开关端口
     confirmPortOnOff(){
-    this.$http.put('',{
+  this.$confirm("确认对端口进行此操作？, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          // console.log(this.timeRange,"kkk")
+          if(this.timeRange==""){
+            this.$message.warning("请选择开启端口的时间段!")
+          }else{
+             var obj={
       status:this.portStatus,
-      available_time:this.timeRange
-    })
+      available_time:this.timeRange,
+      switch_ip:this.switch_ip,
+      terminal_ip:this.terminal_ip,
+      location:this.location,
+      switch_name:this.switch_name,
+      switch_port:this.switch_port,
+      terminal_type:this.terminal_type
+    }
+          this.$http.put('/ecc/terminal',obj)
     .then(res=>{
-
+        if (res.data.errcode !== "0") {
+            this.$message.error("端口操作失败！");
+          } else {
+            this.$message.success("端口操作成功！");
+            this.portOnOffDialogVisible=false
+            this.loadData()
+            console.log(obj)
+          }
     })
     .catch(res=>{
       this.$message.error("访问失败！")
     })
+          }
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "取消对端口进行此操作"
+          });
+        });
     },
     // 端口开启关闭弹框
-    portManage(terminal_ip,switch_port, status) {
+    portManage(terminal_ip,location,terminal_type,switch_name,switch_ip,switch_port, status) {
+      this.timeRange=""
       this.$http.get('/ecc/auth/manager')
 .then(res=>{
   if(res.data.errcode=='4105'){
@@ -1097,6 +1150,10 @@ catch(error){
       this.switch_port=switch_port;
       this.portStatus=status;
        this.terminal_ip=terminal_ip;
+       this.location=location;
+       this.terminal_type=terminal_type;
+       this.switch_name=switch_name;
+       this.switch_ip=switch_ip;
   }
 })
     }
@@ -1144,7 +1201,7 @@ catch(error){
         }
           }
         .oprations_btns {
-            width: 807px;
+            width: 550px;
     margin-left: -13px;
           margin-left: -14px;
           .staff_btn {
@@ -1233,6 +1290,9 @@ catch(error){
     text-align: right;
     margin-right: 61px;
     color: white;
+  }
+  .multiUpload{
+float:left;
   }
   .search_box {
       margin-left: 989px;
