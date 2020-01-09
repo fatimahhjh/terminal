@@ -29,11 +29,11 @@
                 >一键应急关闭</el-tag
               >
             </div>
-            <div class="refresh"  @click="refreshData">
-              <!-- <el-button type="success" size="mini" @click="refreshData"> -->
-                 <i class="el-icon-refresh"></i>
-              <!-- </el-button> -->
+              <el-tooltip class="item" effect="light" content="点击刷新获取实时数据" placement="left-start">
+             <div class="refresh"  @click="refreshData">
+                <i class="el-icon-refresh"></i>
             </div>
+            </el-tooltip>
             <div class="search_box">
       <search
         @list="onList"
@@ -91,6 +91,12 @@
             show-overflow-tooltip
           >
           </el-table-column>
+          <el-table-column
+            prop="remark"
+            label="备注"
+            show-overflow-tooltip
+          >
+          </el-table-column>
           <el-table-column fixed="right" label="管理状态">
             <template slot-scope="scope">
               <el-button
@@ -120,7 +126,7 @@
               <upload :submitUrl="staffSubmitUrl" :upload_btn="'uploadTerms_btn'" :title="'批量上传新增人员'"></upload>
    </div>
     <div class="addBtns"> 
-      <el-button type="success" size="mini" @click="addStaff" class="white_font">新增使用人员</el-button>
+      <el-button type="success" size="mini" @click="addStaff" class="white_font">单条新增使用人员</el-button>
       </div>
         <el-table
     :data="staffData"
@@ -176,8 +182,15 @@
     <el-form-item label="姓名" :label-width= "formLabelWidth" prop="name">
       <el-input v-model.trim="EditStaffform.name" autocomplete="off"></el-input>
     </el-form-item>
-    <el-form-item label="岗位" :label-width="formLabelWidth" prop="job">
+    <!-- <el-form-item label="岗位" :label-width="formLabelWidth" prop="job">
       <el-input v-model.trim="EditStaffform.job" autocomplete="off"></el-input>
+    </el-form-item> -->
+    <el-form-item label="岗位" :label-width="formLabelWidth">
+       <el-select v-model="EditStaffform.job" placeholder="请选择人员岗位">
+      <el-option label="运行维护岗" value="运行维护岗"></el-option>
+      <el-option label="运行值班经理岗" value="运行值班经理岗"></el-option>
+      <el-option label="系统管理岗" value="系统管理岗"></el-option>
+    </el-select>
     </el-form-item>
     <el-form-item label="统一认证号" :label-width="formLabelWidth" prop="united_iden_num">
       <el-input v-model.trim="EditStaffform.united_iden_num" autocomplete="off"></el-input>
@@ -198,7 +211,7 @@
     <div class="multiUpload">
               <upload :submitUrl="terminalSubmitUrl" :upload_btn="'uploadStaff_btn'" :title="'批量上传新增终端'"></upload>
     </div>
-    <div class="addBtns"> <el-button type="success" size="mini" @click="addTerms" class="white_font">新增终端</el-button></div>
+    <div class="addBtns"> <el-button type="success" size="mini" @click="addTerms" class="white_font">单条新增终端</el-button></div>
 
         <el-table
     :data="terminalsData"
@@ -302,8 +315,8 @@
                                           :disabled="this.portStatus!='on'||this.pickTime!=='选择时间段'"
                                           v-model="timeRange"
                                           type="datetimerange"
-                                          format="yyyy-MM-dd HH:mm"
-                                          value-format="yyyy-MM-dd HH:mm"
+                                          format="yyyy/M/d HH:mm"
+                                          value-format="yyyy/M/d HH:mm"
                                           start-placeholder="开始日期"
                                           end-placeholder="结束日期"
                                          >
@@ -461,28 +474,28 @@
     <el-button v-else type="primary" @click="confirmTermianlEdit" >确定修改</el-button>
   </div>
 </el-dialog>
-      <!-- 提醒哪些事件处理未成功对话框 -->
+      <!-- 开启成功对话框 -->
       <el-dialog
-        title="以下事件单号处理失败："
-        :visible.sync="failedDialogVisible"
+        title="一键式应急终端端口开启成功提示"
+        :visible.sync="succeedDialogVisible"
         width="40%"
         center
       >
         <el-card class="box-card">
           <div slot="header" class="clearfix">
-            <span>处理失败共：</span><span>{{ result_list.length }}条</span>
+             <el-row>
+                  <el-col :span="24"
+                    ><div class="grid-content bg-purple-dark">
+                 <span class="center_pos">共开启成功：</span><span class="center_pos">{{totalSuccess}}个</span>
+                    </div></el-col
+                  >
+                </el-row>
           </div>
-          <span
-            class="failedIncsShow"
-            v-for="(item, index) in result_list"
-            :key="index"
-            >{{ item }}</span
-          >
         </el-card>
         <span slot="footer" class="dialog-footer">
           <el-button
             type="primary"
-            @click="failedDialogVisible = false"
+            @click="succeedDialogVisible = false"
             class="failedDialogclose"
             plain
             size="mini"
@@ -507,18 +520,6 @@ export default {
     search
   },
   data() {
-    const checkIdenNum = (rule, value, callback) => {
-      let regNum = /^.{1,20}$/;
-      if (value === '') {
-            callback(new Error('必须输入统一认证号'));
-      } else if (!Number.isInteger(+value)) {
-            callback(new Error('输入数字'));
-      } else if (!regNum.test(value)) {
-            callback(new Error('长度过长'));
-      } else {
-            callback();
-      }
-};
     return {
       staffDialogVisible: false,
       // 这是控制一线处理对话框显示与否
@@ -526,6 +527,7 @@ export default {
       emergencyOnDialogVisible: false,
       emergencyOffDialogVisible: false,
       failedDialogVisible: false,
+      succeedDialogVisible:false,
       multiEmerOnValue: 'on',
       multiEmerOffValue: 'off',
       portStatus: "",
@@ -553,7 +555,7 @@ export default {
       }],
       rules:{
 united_iden_num:[
-{ required: true, validator: checkIdenNum, trigger: "blur" }
+{ required: true, validator: this.checkIdenNum, trigger: "blur" }
 ],
 name:[
 { required: true,  message: '请输入人员姓名', trigger: "blur" }
@@ -607,7 +609,7 @@ switch_port:[
         switch_name: "",
         switch_port: ""
       },
-      formLabelWidth: "120px",
+      formLabelWidth: "135px",
       INC_NUMBER_LIST: [],
       listIncNum: [],
       switch_port: "",
@@ -617,12 +619,12 @@ switch_port:[
       switch_name:"",
       terminal_type:"",
       username: "",
+      totalSuccess:"",
       loading: true
     };
   },
   mounted() {
     this.loadData();
-    
   },
   computed: {
     terminalsTableList() {
@@ -637,6 +639,19 @@ switch_port:[
     }
   },
   methods: {
+     checkIdenNum(rule, value, callback){
+      let regNum = /^.{9,9}$/;
+      if (value === ''|| value ==undefined) {
+            callback(new Error('必须输入统一认证号'));
+      } else if (!Number.isInteger(+value)) {
+            callback(new Error('输入数字'));
+            console.log(this.EditStaffform.indenti_num)
+      } else if (!regNum.test(value)) {
+            callback(new Error('请输入9位统一认证号'));
+      } else {
+            callback();
+      }
+},
     checkDepartment(rule, value, callback) {
    if(value===''|| value==undefined){
 callback(new Error('请输入部门'))
@@ -648,7 +663,7 @@ callback(new Error('您没有权限新增该部门人员信息！'))
    }
  },
   checkPort(rule, value, callback) {
-   if(value===''){
+   if(value===''|| value==undefined){
 callback(new Error('请输入接入交换机设备端口'))
    }
    if(this.portList.indexOf(value)==-1){
@@ -734,13 +749,12 @@ this.EditTerminalsform.switch_name="JD49SW13-M2"
           this.$message.warning("对不起，您无操作权限！")
         }
       })
-   
     },
     // 新增使用人员
     addStaff() {
       this.staffTitle = "新增使用人员";
       this.editStaffDialog = true;
-      this.EditStaffform = Object.assign({}, "");
+      this.EditStaffform = Object.assign({},'');
     },
     // 编辑人员信息
     editStaff(index, row) {
@@ -807,6 +821,7 @@ this.EditTerminalsform.switch_name="JD49SW13-M2"
              this.$http
             .post("/ecc/staff", this.EditStaffform)
             .then(res => {
+                // console.log(this.EditStaffform)
               if (res.data.errcode =="0") {
                 this.$message.success("新增人员成功！");
           this.editStaffDialog=false;
@@ -836,7 +851,7 @@ this.EditTerminalsform.switch_name="JD49SW13-M2"
     editStaffCancle(){
     this.editStaffDialog = false
     this.editTerminalsDialog = false
-this.$refs.form.resetFields();
+    this.$refs.form.resetFields();
     },
     // 确认修改使用人员
     confirmStaffEdit() {
@@ -857,6 +872,7 @@ this.$refs.form.resetFields();
             .then(res => {
               if (res.data.errcode =="0") {
                 this.$message.success("修改人员成功！");
+                // console.log(this.EditStaffform)
                 this.staffManage()
           this.editStaffDialog=false;
           this.staffManage();
@@ -884,8 +900,8 @@ this.$refs.form.resetFields();
     terminalManage() {
       this.$http.get('/ecc/auth/system')
       .then(res=>{
-        if(res.data.errcode=='4105'){
-      this.$message.warning("您没有此权限！");
+        if(res.data.errcode !=='0'){
+      this.$message.warning("对不起，您没有此权限！");
         }else{
   this.$http
         .get("/ecc/device")
@@ -932,6 +948,7 @@ try{
  this.$http
             .post("/ecc/device", this.EditTerminalsform)
             .then(res => {
+              // console.log(this.EditTerminalsform)
               if (res.data.errcode =="0") {
                 this.$message.success("新增终端成功！");
           this.editTerminalsDialog=false;
@@ -955,6 +972,7 @@ catch(error){
             type: "info",
             message: "已取消新增"
           });
+          this.$refs.form.resetFields();
         });
 },
   // 删除终端
@@ -994,7 +1012,13 @@ catch(error){
         type: "warning"
       })
         .then(() => {
-          this.$http
+          this.$refs.form.validate(valid=>{
+             if(!valid){
+               this.$message.warning("校验未通过");
+          return;
+            }
+ try{
+   this.$http
             .put("/ecc/device", this.EditTerminalsform)
             .then(res => {
               if (res.data.errcode =="0") {
@@ -1009,13 +1033,19 @@ catch(error){
             })
             .catch(res => {
               this.$message.error("修改终端操作出现问题了！");
-            });
+            });}
+            catch(error){
+          this.$message.error("请求发送失败");
+}
+          })
+
         })
         .catch(() => {
           this.$message({
             type: "info",
             message: "已取消修改"
           });
+                   this.$refs.form.resetFields();
         });
     },
     // 取消应急终端端口开启
@@ -1040,13 +1070,16 @@ catch(error){
        this.$http
         .get("/ecc/auth/manager")
         .then(res => {
-          if (res.data.errcode == "4105") {
+          if (res.data.errcode !== "0") {
             this.$message.warning("对不起，您没有此权限！");
           } else {
-      // this.emergencyOnDialogVisible = true;
-       this.$confirm('正在启动应急终端端口，请等待...', '一键式启动应急终端端口中', {
+            this.$http.get('/ecc/terminal/open/all')
+            .then(res=>{
+              this.totalSuccess=res.data.total
+ this.$confirm('正在启动应急终端端口，请等待<span class="loading"></span>', '一键式启动应急终端端口中', {
           cancelButtonText: '关闭弹框',
           type: 'warning',
+          dangerouslyUseHTMLString:true,
           showConfirmButton:false,
           center: true
         }).catch(() => {
@@ -1055,6 +1088,22 @@ catch(error){
             message: '已关闭一键式启动应急终端端口弹框'
           });
         });
+if(res.data.errcode =="0"){
+ this.succeedDialogVisible=true;
+  // this.$message({
+  //         dangerouslyUseHTMLString: true,
+  //         type:'success',
+  //         message: '<strong>这是 <i>HTML</i> 片段</strong>'
+  //       });
+}else{
+  this.$message.error("一键式应急开始失败！")
+}
+            })
+            .catch(res=>{
+              this.$message.error("访问失败！")
+            })
+      // this.emergencyOnDialogVisible = true;
+      
           }
         })
         .catch(res => {
@@ -1066,13 +1115,14 @@ catch(error){
         this.$http
         .get("/ecc/auth/manager")
         .then(res => {
-          if (res.data.errcode == "4105") {
+          if (res.data.errcode !== "0") {
             this.$message.warning("对不起，您没有此权限！");
           } else {
           // this.emergencyOffDialogVisible = true;
-          this.$confirm('正在关闭应急终端端口，请等待...', '一键式关闭应急终端端口中', {
+          this.$confirm('正在关闭应急终端端口，请等待<span class="loading"></span>', '一键式关闭应急终端端口中', {
           cancelButtonText: '关闭弹框',
           type: 'warning',
+          dangerouslyUseHTMLString:true,
           showConfirmButton:false,
           center: true
         }).catch(() => {
@@ -1131,11 +1181,17 @@ catch(error){
     },
     // 刷新数据
     refreshData(){
+      
     this.$http.get('/ecc/terminal/real/data')
     .then(res => {
           this.loading = false;
           let list1 = res.data.data;
-          this.tableData = list1;})
+          this.tableData = list1;
+          this.$message.success("数据刷新成功！")
+           
+           })
+      
+
     },
     // 确认开关端口
     confirmPortOnOff(){
@@ -1215,7 +1271,7 @@ catch(error){
       this.timeRange=""
       this.$http.get('/ecc/auth/manager')
 .then(res=>{
-  if(res.data.errcode=='4105'){
+  if(res.data.errcode !=='0'){
          this.$message.warning("对不起，您没有此权限！");
   }else{
      this.portOnOffDialogVisible = true;
@@ -1430,14 +1486,13 @@ float:left;
       font-weight: 600;
     }
   }
+  .box-card{
+.center_pos{
+  position:relative;
+  top:20px;
+  margin-left: 18px;
+}
 
-  .failedIncsShow {
-    background-color: rgba(245, 108, 108, 0.1);
-    border-color: rgba(245, 108, 108, 0.2);
-    color: #f56c6c;
-    padding: 6px;
-    margin-left: 5px;
-    border-radius: 8px;
   }
   .el-dialog__title {
     line-height: 24px;
@@ -1451,5 +1506,20 @@ float:left;
 }
 .failedDialogclose {
   color: #e4e7ed;
+}
+.loading:after {
+overflow: hidden;
+display: inline-block;
+vertical-align: bottom;
+animation: ellipsis 2s infinite;
+content: "\2026";
+}
+@keyframes ellipsis {
+from {
+width: 2px;
+}
+to {
+width: 15px;
+}
 }
 </style>
