@@ -43,7 +43,7 @@
                   <el-submenu v-else index="2">
                     <template slot="title" class="login_text">
                       <i class="el-icon-user-solid"></i>
-                      {{ $root.Hub.username }}
+                      {{ $root.Hub.username }}{{$root.Hub.department}}
                     </template>
                     <el-menu-item index="2-1" @click="logout"
                       >退出登录</el-menu-item

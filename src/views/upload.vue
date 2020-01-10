@@ -12,9 +12,7 @@
       :http-request="upload"
     >
       <div class="uploadBtn">
-        <el-tag effect="dark" :class="upload_btn">{{
-          title
-        }}</el-tag>
+        <el-tag effect="dark" :class="upload_btn">{{ title }}</el-tag>
       </div>
     </el-upload>
   </div>
@@ -25,7 +23,7 @@ export default {
   props: ["submitUrl", "title", "upload_btn"],
   data() {
     return {
-      uploadbeha: false,
+      uploadbeha: false
     };
   },
   methods: {
@@ -51,7 +49,7 @@ export default {
             this.$message.error("数据库插入错误");
           }
         });
-    },
+    }
     // clickUpload() {
     //   this.$http
     //     .get("/ecc/auth/operation")
@@ -84,12 +82,15 @@ export default {
 .uploadStaff_btn {
   background-color: rgb(236, 141, 69);
   border: 1px solid rgb(236, 141, 69);
-      height: 28px;
-
+  height: 28px;
+  position: relative;
+  top: 2px;
 }
 .uploadTerms_btn {
   background-color: rgb(236, 141, 69);
   border: 1px solid rgb(236, 141, 69);
-      height: 28px;
+  height: 28px;
+  position: relative;
+  top: 2px;
 }
 </style>

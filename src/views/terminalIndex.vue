@@ -10,6 +10,12 @@
           <!-- 导航栏操作 -->
           <el-card shadow="always">
             <div class="oprations_btns">
+                 <el-tag
+                effect="dark"
+                @click="downloadLog()"
+                class="downLog"
+                >日志下载</el-tag
+              >
               <el-tag effect="dark" @click="staffManage" class="staff_btn"
                 >使用人员管理</el-tag
               >
@@ -28,6 +34,7 @@
                 class="emergencyOff_btn"
                 >一键应急关闭</el-tag
               >
+              
             </div>
               <el-tooltip class="item" effect="light" content="点击刷新获取实时数据" placement="left-start">
              <div class="refresh"  @click="refreshData">
@@ -124,6 +131,7 @@
       <el-dialog title="使用人员管理" :visible.sync="staffDialogVisible" width="80%">
    <div class="multiUpload">
               <upload :submitUrl="staffSubmitUrl" :upload_btn="'uploadTerms_btn'" :title="'批量上传新增人员'"></upload>
+               <el-button type="primary" size="mini" class="white_font" @click="downloadStaff">下载批量上传模板</el-button>
    </div>
     <div class="addBtns"> 
       <el-button type="success" size="mini" @click="addStaff" class="white_font">单条新增使用人员</el-button>
@@ -210,6 +218,8 @@
   <el-dialog title="公用终端管理" :visible.sync="terminalsDialogVisible" width="80%">
     <div class="multiUpload">
               <upload :submitUrl="terminalSubmitUrl" :upload_btn="'uploadStaff_btn'" :title="'批量上传新增终端'"></upload>
+               <el-button type="primary" size="mini" class="white_font" @click="downloadTerminal">下载批量上传模板</el-button>
+
     </div>
     <div class="addBtns"> <el-button type="success" size="mini" @click="addTerms" class="white_font">单条新增终端</el-button></div>
 
@@ -474,7 +484,36 @@
     <el-button v-else type="primary" @click="confirmTermianlEdit" >确定修改</el-button>
   </div>
 </el-dialog>
-      <!-- 开启成功对话框 -->
+<!-- 一键关闭成功对话框 -->
+ <el-dialog
+        title="一键式应急终端端口关闭成功提示"
+        :visible.sync="succeedOffDialogVisible"
+        width="40%"
+        center
+      >
+        <el-card class="box-card">
+          <div slot="header" class="clearfix">
+             <el-row>
+                  <el-col :span="24"
+                    ><div class="grid-content bg-purple-dark">
+                 <span class="center_pos">共关闭成功：</span><span class="center_pos">{{totalSuccessOff}}个</span>
+                    </div></el-col
+                  >
+                </el-row>
+          </div>
+        </el-card>
+        <span slot="footer" class="dialog-footer">
+          <el-button
+            type="primary"
+            @click="succeedOffDialogVisible = false"
+            class="failedDialogclose"
+            plain
+            size="mini"
+            >关闭</el-button
+          >
+        </span>
+      </el-dialog>
+      <!-- 一键开启成功对话框 -->
       <el-dialog
         title="一键式应急终端端口开启成功提示"
         :visible.sync="succeedDialogVisible"
@@ -526,8 +565,8 @@ export default {
       portOnOffDialogVisible: false,
       emergencyOnDialogVisible: false,
       emergencyOffDialogVisible: false,
-      failedDialogVisible: false,
       succeedDialogVisible:false,
+      succeedOffDialogVisible:false,
       multiEmerOnValue: 'on',
       multiEmerOffValue: 'off',
       portStatus: "",
@@ -536,6 +575,7 @@ export default {
       pickTime:"",
       timeRange:"",
       tableData: [],
+      newTime:"",
       portList:[],
       filterWord: "",
       filterResult: [],
@@ -619,6 +659,7 @@ switch_port:[
       switch_name:"",
       terminal_type:"",
       username: "",
+      totalSuccessOff:"",
       totalSuccess:"",
       loading: true
     };
@@ -975,6 +1016,18 @@ catch(error){
           this.$refs.form.resetFields();
         });
 },
+// 下载日志
+downloadLog(){
+  window.open('/ecc/log/download')
+},
+// 下载人员信息模板
+downloadStaff(){
+  window.open('')
+},
+// 下载终端信息模板
+downloadTerminal(){
+window.open('')
+},
   // 删除终端
      deleteTerminals(terminal_ip) {
          this.$confirm('此操作将永久删除该终端, 是否继续?', '提示', {
@@ -1096,7 +1149,7 @@ if(res.data.errcode =="0"){
   //         message: '<strong>这是 <i>HTML</i> 片段</strong>'
   //       });
 }else{
-  this.$message.error("一键式应急开始失败！")
+  this.$message.error("一键式应急开启失败！")
 }
             })
             .catch(res=>{
@@ -1118,8 +1171,10 @@ if(res.data.errcode =="0"){
           if (res.data.errcode !== "0") {
             this.$message.warning("对不起，您没有此权限！");
           } else {
-          // this.emergencyOffDialogVisible = true;
-          this.$confirm('正在关闭应急终端端口，请等待<span class="loading"></span>', '一键式关闭应急终端端口中', {
+             this.$http.get('/ecc/terminal/close/all')
+             .then(res=>{
+               this.totalSuccessOff=res.data.total
+ this.$confirm('正在关闭应急终端端口，请等待<span class="loading"></span>', '一键式关闭应急终端端口中', {
           cancelButtonText: '关闭弹框',
           type: 'warning',
           dangerouslyUseHTMLString:true,
@@ -1131,6 +1186,13 @@ if(res.data.errcode =="0"){
             message: '已关闭一键式关闭应急终端端口弹框'
           });
         });
+        if(res.data.errcode =="0"){
+ this.succeedOffDialogVisible =true;
+}else{
+  this.$message.error("一键式应急关闭失败！")
+}
+             })
+          // this.emergencyOffDialogVisible = true;
           }
         })
         .catch(res => {
@@ -1173,22 +1235,20 @@ if(res.data.errcode =="0"){
         })
         .catch(res => {
           this.$message.error("数据获取失败");
-          setTimeout(function() {
-            // 设定定时器，超时5S后自动关闭遮罩层，避免请求失败时，遮罩层一直存在的问题
-            this.loading = false; // 关闭遮罩层
-          }, 5000);
+         this.loading=false;
         });
     },
     // 刷新数据
     refreshData(){
-      
+    this.newTime=new Date()
+
+    console.log(this.newTime)
     this.$http.get('/ecc/terminal/real/data')
     .then(res => {
           this.loading = false;
           let list1 = res.data.data;
           this.tableData = list1;
           this.$message.success("数据刷新成功！")
-           
            })
       
 
@@ -1329,8 +1389,8 @@ if(res.data.errcode =="0"){
         }
           }
         .oprations_btns {
-            width: 550px;
-    margin-left: -13px;
+            width: 653px;
+            margin-left: -13px;
           margin-left: -14px;
           .staff_btn {
             background-color: rgb(231, 116, 21);
@@ -1341,6 +1401,10 @@ if(res.data.errcode =="0"){
             background-color: #fe6845;
             border: 1px solid #fe6845;
             margin-left: 40px;
+          }
+          .downLog{
+             background-color: rgb(218, 140, 76);
+            border: 1px solid rgb(218, 140, 76);
           }
           .emergencyOn_btn {
             background-color: rgb(207, 79, 90);
