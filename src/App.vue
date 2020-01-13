@@ -33,17 +33,14 @@
                   text-color="white"
                   active-text-color="white"
                 >
-                  <el-menu-item
-                    v-if="!$root.Hub.username"
-                    index="1"
-                  >
+                  <el-menu-item v-if="!$root.Hub.username" index="1">
                     <i class="el-icon-user-solid"></i>
                     未登录
                   </el-menu-item>
                   <el-submenu v-else index="2">
                     <template slot="title" class="login_text">
                       <i class="el-icon-user-solid"></i>
-                      {{ $root.Hub.username }}{{$root.Hub.department}}
+                      {{ $root.Hub.username }}{{ $root.Hub.department }}
                     </template>
                     <el-menu-item index="2-1" @click="logout"
                       >退出登录</el-menu-item
@@ -117,7 +114,7 @@
       }
     }
     .head-right {
-      width: 104px;
+      width: 148px;
       height: 57px;
       float: right;
       margin-right: 119px;
@@ -192,10 +189,12 @@ export default {
   mounted() {
     document.cookie = "username=hjhhhhh";
     document.cookie = "department=数据中心网络一部";
-    this.$root.Hub.username = getCookie("username");
-    this.$root.Hub.department=getCookie("department")
+    let name = getCookie("username");
+    this.$root.Hub.username = name.replace(/\"/g, "");
+    let department = getCookie("department");
+    this.$root.Hub.department = department.replace(/\"/g, "");
     if (this.$root.Hub.username == "") {
-     this.login()
+      this.login();
     }
   }
 };

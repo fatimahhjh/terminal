@@ -20,7 +20,7 @@
 
 <script>
 export default {
-  props: ["submitUrl", "title", "upload_btn"],
+  props: ["submitUrl", "title", "upload_btn", "staffManage", "terminalManage"],
   data() {
     return {
       uploadbeha: false
@@ -44,6 +44,8 @@ export default {
           if (errcode == "0") {
             this.$message.success("上传成功");
             this.uploadbeha = true;
+            this.staffManage();
+            this.terminalManage();
             //  文件上传成功
           } else {
             this.$message.error("数据库插入错误");
@@ -80,17 +82,15 @@ export default {
   margin: 0 10px;
 }
 .uploadStaff_btn {
-  background-color: rgb(236, 141, 69);
-  border: 1px solid rgb(236, 141, 69);
   height: 28px;
-  position: relative;
-  top: 2px;
+  width: 130px;
+  margin-right: -10px;
 }
 .uploadTerms_btn {
-  background-color: rgb(236, 141, 69);
-  border: 1px solid rgb(236, 141, 69);
+  // background-color: rgb(236, 141, 69);
+  // border: 1px solid rgb(236, 141, 69);
   height: 28px;
-  position: relative;
-  top: 2px;
+  width: 130px;
+  margin-right: -10px;
 }
 </style>
