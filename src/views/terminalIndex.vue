@@ -18,7 +18,7 @@
               > -->
                <el-tag
                 effect="dark"
-                @click="downloadTime()"
+                @click="showLog()"
                 class="downTime"
                 >操作日志</el-tag
               >
@@ -145,7 +145,6 @@
   <el-collapse-item title="下载批量上传终端信息模板" name="1">
     <div class="float_right">
                <el-button type="primary" size="mini" class="white_font" @click="downloadTerminal">下载批量上传模板</el-button>
-
     </div>
   </el-collapse-item>
   <el-collapse-item title="批量导入终数据" name="2">
@@ -411,9 +410,6 @@
                        </div>
                           </el-col>
                         </el-row>
-                       
-                      
-                       
                       </div>
                     </div></el-col
                   >
@@ -431,102 +427,56 @@
           </el-card>
         </div>
       </el-dialog>
-      <!-- 这个是批量应急终端端口开启弹框 -->
-       <el-dialog title="" :visible.sync="emergencyOnDialogVisible" width="65%" center>
-        <div class="el_body_dialog">
-          <div class="incNumTitle">
-            <span id="fontWeightUp">你要对以下应急端口进行端口开启</span>
-            <span id="fontWeightUp"
-              >共{{ }}条</span>
-          </div>
-          <el-card shadow="always">
-            <div class="incNumshow">
-                   <el-row>
-                  <el-col :span="24"
-                    ><div class="grid-content bg-purple-dark">
-                      <div class="middle_place1" v-for="(item, index) in INC_NUMBER_LIST" :key="index">{{ item }},</div>
-                    </div></el-col
-                  >
-                </el-row>
-                <el-row :gutter="20">
-                  <el-col :span="7"
-                    ><div class="grid-content bg-purple">
-                      <div class="middle_place">
-                       <el-radio v-model="multiEmerOnValue">批量开启端口</el-radio>
-                      </div></div
-                  ></el-col>
-                  <el-col :span="17" :offset="0"
-                    ><div class="grid-content bg-purple">
-                      <div class="posi_adjust">
-                        <el-radio v-model="permanent" label="永久有效"
-                          >永久有效</el-radio
-                        >
-                      </div>
-                    </div></el-col
-                  >
-                </el-row>
-                <el-row :gutter="24">
-                  <el-col :span="24"
-                    ><div class="grid-content bg-purple">
-                      <div class="btns_position">
-                        <el-button type="success" size="middle">确认开启</el-button>
-              <el-button type="info" size="middle" @click="cancleEmerOn">取消开启</el-button>
-                      </div>
-                    </div></el-col
-                  >
-                </el-row>
-            </div>
-          </el-card>
-        </div>
-      </el-dialog>
-      <!-- 这个是批量应急终端端口关闭弹框 -->
-      <el-dialog title="" :visible.sync="emergencyOffDialogVisible" width="65%" center>
-        <div class="el_body_dialog">
-          <div class="incNumTitle">
-            <span id="fontWeightUp">你要对以下应急端口进行端口关闭</span>
-            <span id="fontWeightUp"
-              >共{{ }}条</span>
-          </div>
-          <el-card shadow="always">
-            <div class="incNumshow">
-                   <el-row>
-                  <el-col :span="24"
-                    ><div class="grid-content bg-purple-dark">
-                      <div class="middle_place1" v-for="(item, index) in INC_NUMBER_LIST" :key="index">{{ item }},</div>
-                    </div></el-col
-                  >
-                </el-row>
-                <el-row :gutter="20">
-                  <el-col :span="7"
-                    ><div class="grid-content bg-purple">
-                      <div class="middle_place">
-                       <el-radio v-model="multiEmerOffValue">批量关闭端口</el-radio>
-                      </div></div
-                  ></el-col>
-                  <el-col :span="17" :offset="0"
-                    ><div class="grid-content bg-purple">
-                      <div class="posi_adjust">
-                        <el-radio v-model="permanent" label="永久有效"
-                          >永久有效</el-radio
-                        >
-                      </div>
-                    </div></el-col
-                  >
-                </el-row>
-                <el-row :gutter="24">
-                  <el-col :span="24"
-                    ><div class="grid-content bg-purple">
-                      <div class="btns_position">
-                        <el-button type="success" size="middle">确认关闭</el-button>
-              <el-button type="info" size="middle" @click="cancleEmerOff">取消关闭</el-button>
-                      </div>
-                    </div></el-col
-                  >
-                </el-row>
-            </div>
-          </el-card>
-        </div>
-      </el-dialog>
+      <!-- 日志展示弹框 -->
+      <el-dialog title="操作日志查看" width="90%" :visible.sync="logDialogTableVisible">
+        <el-table
+    :data="logData"
+    ref="filterTable"
+    style="width: 100%"
+    v-loading="loading">
+    <el-table-column
+      prop="handle_time"
+      label="操作时间"
+      sortable
+      column-key="column-key"
+      :filters="[{text: '2016-05-01', value: '2016-05-01'}, {text: '2016-05-02', value: '2016-05-02'}, {text: '2016-05-03', value: '2016-05-03'}, {text: '2016-05-04', value: '2016-05-04'}]"
+      :filter-method="filterHandler"
+      >
+    </el-table-column>
+    <el-table-column
+      prop="username"
+      label="操作用户"
+      width="120">
+    </el-table-column>
+    <el-table-column
+      prop="handle_type"
+      label="操作分类">
+    </el-table-column>
+    <el-table-column
+      prop="handle_content"
+      label="操作内容"
+      show-overflow-tooltip>
+    </el-table-column>
+    <!-- <el-table-column
+      prop="handle_result"
+      label="操作结果">
+    </el-table-column> -->
+     <el-table-column
+      prop="handle_result"
+      label="操作结果"
+      :filters="[{ text: '手动关闭成功', value: '手动关闭成功' },{ text: '手动关闭失败', value: '手动关闭失败' },{ text: '手动开启成功', value: '手动开启成功' }, { text: '手动开启失败', value: '手动开启失败' }, { text: '一键式应急端口开启失败', value: '一键式应急端口开启失败' }
+      , { text: '一键式应急端口开启成功', value: '一键式应急端口开启成功' }, { text: '一键式应急端口关闭失败', value: '一键式应急端口关闭失败' }, { text: '一键式应急端口关闭成功', value: '一键式应急端口关闭成功' }, { text: '定时任务开启成功', value: '定时任务开启成功' }
+      , { text: '定时任务开启失败', value: '定时任务开启失败' }, { text: '定时任务关闭失败', value: '定时任务关闭失败' }, { text: '定时任务关闭成功', value: '定时任务关闭成功' }]"
+      :filter-method="filterTag"
+      filter-placement="bottom-end">
+      <template slot-scope="scope">
+        <el-tag
+          :type="scope.row.handle_result=='手动关闭成功' || scope.row.handle_result == '一键式应急端口开启成功' || scope.row.handle_result == '手动开启成功' || scope.row.handle_result == '一键式应急端口关闭成功' || scope.row.handle_result == '定时任务关闭成功' || scope.row.handle_result == '定时任务开启成功' ? 'success' : 'danger'"
+          disable-transitions>{{scope.row.handle_result}}</el-tag>
+      </template>
+    </el-table-column>
+  </el-table>
+  </el-dialog>
       <!-- 这是编辑终端弹框 -->
       <el-dialog :title="termstitle" :visible.sync="editTerminalsDialog">
   <el-form :model="EditTerminalsform" :rules="rules"  ref="form">
@@ -567,7 +517,7 @@
 </el-dialog>
 <!-- 一键关闭成功对话框 -->
  <el-dialog
-        title="一键式应急终端端口关闭成功提示"
+        title="一键式应急终端端口关闭提示"
         :visible.sync="succeedOffDialogVisible"
         width="40%"
         center
@@ -577,6 +527,7 @@
              <el-row>
                   <el-col :span="24"
                     ><div class="grid-content bg-purple-dark">
+                    <span class="center_pos" v-if="this.hint!=='0'">正在关闭应急终端端口，请等待<span class="loading"></span><span class="loading"></span><span class="loading"></span></span>
                  <span class="center_pos">共关闭成功：</span><span class="center_pos">{{totalSuccessOff}}个</span>
                     </div></el-col
                   >
@@ -596,7 +547,7 @@
       </el-dialog>
       <!-- 一键开启成功对话框 -->
       <el-dialog
-        title="一键式应急终端端口开启成功提示"
+        title="一键式应急终端端口开启提示"
         :visible.sync="succeedDialogVisible"
         width="40%"
         center
@@ -606,7 +557,8 @@
              <el-row>
                   <el-col :span="24"
                     ><div class="grid-content bg-purple-dark">
-                 <span class="center_pos">共开启成功：</span><span class="center_pos">{{totalSuccess}}个</span>
+                    <span class="center_pos" v-if="this.hint!=='0'">正在开启应急终端端口，请等待<span class="loading"></span><span class="loading"></span><span class="loading"></span></span>
+                 <span class="center_pos" v-else>共开启成功：</span><span class="center_pos">{{totalSuccess}}个</span>
                     </div></el-col
                   >
                 </el-row>
@@ -641,6 +593,7 @@ export default {
   },
   data() {
     return {
+      logData: [],
       staffDialogVisible: false,
       // 这是控制一线处理对话框显示与否
       portOnOffDialogVisible: false,
@@ -721,6 +674,7 @@ export default {
       editTerminalsDialog: false,
        UploadStaffDialog: false,
        UploadTermDialog:false,
+       logDialogTableVisible:false,
       terminalsDialogVisible: false,
       EditStaffform: {
         name: "",
@@ -740,6 +694,7 @@ export default {
       formLabelWidth: "135px",
       INC_NUMBER_LIST: [],
       listIncNum: [],
+      hint:"",
       switch_port: "",
       terminal_ip: "",
       location: "",
@@ -1119,9 +1074,25 @@ export default {
           this.$refs.form.resetFields();
         });
     },
-    // 下载定时任务日志
-    downloadTime() {
-      window.open("/ecc/task/log/download");
+    // 展示定时任务日志
+    showLog() {
+      this.logDialogTableVisible=true;
+    this.$http.get('/ecc/log/download')
+    .then(res=>{
+      if(res.data.errcode==0){
+        this.loading=false;
+        this.logData=res.data.data
+        for (let i = 0; i < this.logData.length; i++){
+        this.hanleResultLists.push(this.logData[i].handle_result)
+        }
+      }
+      else{
+        this.$message.error("操作日志数据获取失败！")
+      }
+    })
+    .catch(res=>{
+      this.$message.error("访问失败！")
+    })
     },
     // 下载日志
     downloadLog() {
@@ -1218,23 +1189,6 @@ export default {
           this.$refs.form.resetFields();
         });
     },
-    // 取消应急终端端口开启
-    cancleEmerOn() {
-      this.$confirm("确认取消一键应急终端端口开启？, 是否继续?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning"
-      })
-        .then(() => {
-          this.emergencyOnDialogVisible = false;
-        })
-        .catch(() => {
-          this.$message({
-            type: "info",
-            message: "继续一键应急终端端口开启"
-          });
-        });
-    },
     // 一键应急开启端口
     emergencyOnekeyOn() {
       this.$http
@@ -1243,41 +1197,33 @@ export default {
           if (res.data.errcode !== "0") {
             this.$message.warning("对不起，您没有此权限！");
           } else {
+             this.$confirm('确认一键式开启应急终端端口, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
             this.$http
               .get("/ecc/terminal/open/all")
               .then(res => {
                 this.totalSuccess = res.data.total;
-                this.$confirm(
-                  '正在启动应急终端端口，请等待<span class="loading"></span>',
-                  "一键式启动应急终端端口中",
-                  {
-                    cancelButtonText: "关闭弹框",
-                    type: "warning",
-                    dangerouslyUseHTMLString: true,
-                    showConfirmButton: false,
-                    center: true
-                  }
-                ).catch(() => {
-                  this.$message({
-                    type: "info",
-                    message: "已关闭一键式启动应急终端端口弹框"
-                  });
-                });
+                this.hint=res.data.errcode;
                 if (res.data.errcode == "0") {
                   this.succeedDialogVisible = true;
-                  // this.$message({
-                  //         dangerouslyUseHTMLString: true,
-                  //         type:'success',
-                  //         message: '<strong>这是 <i>HTML</i> 片段</strong>'
-                  //       });
                 } else {
+                  this.succeedDialogVisible = false;
                   this.$message.error("一键式应急开启失败！");
                 }
               })
               .catch(res => {
                 this.$message.error("访问失败！");
               });
-            // this.emergencyOnDialogVisible = true;
+         
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消一键式开启应急终端端口'
+          });
+        });
           }
         })
         .catch(res => {
@@ -1292,54 +1238,33 @@ export default {
           if (res.data.errcode !== "0") {
             this.$message.warning("对不起，您没有此权限！");
           } else {
-            this.$http.get("/ecc/terminal/close/all").then(res => {
+ this.$confirm('确认一键式关闭应急终端端口, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+           this.$http.get("/ecc/terminal/close/all").then(res => {
               this.totalSuccessOff = res.data.total;
-              this.$confirm(
-                '正在关闭应急终端端口，请等待<span class="loading"></span>',
-                "一键式关闭应急终端端口中",
-                {
-                  cancelButtonText: "关闭弹框",
-                  type: "warning",
-                  dangerouslyUseHTMLString: true,
-                  showConfirmButton: false,
-                  center: true
-                }
-              ).catch(() => {
-                this.$message({
-                  type: "info",
-                  message: "已关闭一键式关闭应急终端端口弹框"
-                });
-              });
+              this.hint=res.data.errcode
               if (res.data.errcode == "0") {
                 this.succeedOffDialogVisible = true;
               } else {
                 this.$message.error("一键式应急关闭失败！");
               }
             });
-            // this.emergencyOffDialogVisible = true;
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消一键式关闭应急终端端口'
+          });
+        });
           }
         })
         .catch(res => {
           this.$message.error("访问失败！");
         });
     },
-    // 取消一键应急终端端口关闭
-    cancleEmerOff() {
-      this.$confirm("确认取消一键应急终端端口关闭？, 是否继续?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning"
-      })
-        .then(() => {
-          this.emergencyOffDialogVisible = false;
-        })
-        .catch(() => {
-          this.$message({
-            type: "info",
-            message: "继续一键应急终端端口关闭"
-          });
-        });
-    },
+
     // 取消端口管理
     canclePortMana() {
       this.portOnOffDialogVisible = false;
@@ -1362,6 +1287,19 @@ export default {
           this.loading = false;
         });
     },
+      resetDateFilter() {
+        this.$refs.filterTable.clearFilter('handle_time');
+      },
+      clearFilter() {
+        this.$refs.filterTable.clearFilter();
+      },
+      filterTag(value, row) {
+        return row.tag === value;
+      },
+      filterHandler(value, row, column) {
+        const property = column['property'];
+        return row[property] === value;
+      },
     // 刷新数据
     refreshData() {
       this.disabled = true;
@@ -1530,19 +1468,6 @@ cursor:pointer;//鼠标变小手
     top: -29px;
         height: 36px;
     right: -306px;
-          // top: -32px;
-          // width: 33px;
-          // right: -941px;
-          // height: 34px;
-          // background-color: #35b7ce;
-          // border-radius: 25%;
-          // position: relative;
-          // .el-icon-refresh:before {
-          //   content: "\e6d0";
-          //   position: absolute;
-          //   top: 9px;
-          //   right: 8px;
-          // }
         }
         .oprations_btns {
           width: 659px;
@@ -1710,6 +1635,13 @@ cursor:pointer;//鼠标变小手
     #fontWeightUp {
       font-weight: 600;
     }
+  }
+   .el-table .error-row {
+    background: rgb(187, 65, 35);
+  }
+
+  .el-table .success-row {
+    background: #25530c;
   }
   .box-card {
     .center_pos {
