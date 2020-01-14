@@ -43,8 +43,6 @@
               
             </div>
               <el-tooltip class="item" effect="light" content="点击刷新获取实时数据" placement="left-start">
-             <!-- <div class="refresh"  @click="refreshData"> -->
-            <!-- </div> -->
             <el-button class="refresh" :disabled="disabled" @click="refreshData">
                 <i class="el-icon-refresh"></i>
             </el-button>
@@ -472,8 +470,8 @@
       :filter-method="filterHandleResult"
       filter-placement="bottom-end">
       <template slot-scope="scope">
-        <el-tag
-          :type="scope.row.handle_result=='手动关闭成功' || scope.row.handle_result == '一键式应急端口开启成功' || scope.row.handle_result == '手动开启成功' || scope.row.handle_result == '一键式应急端口关闭成功' || scope.row.handle_result == '定时任务关闭成功' || scope.row.handle_result == '定时任务开启成功' ? 'success' : 'danger'"
+         <el-tag
+          :type="scope.row.handle_result=='上传设备信息成功' || scope.row.handle_result=='删除设备信息成功' || scope.row.handle_result=='新增设备信息成功' || scope.row.handle_result=='上传人员信息成功' || scope.row.handle_result=='删除人员信息成功' || scope.row.handle_result=='新增人员信息成功' || scope.row.handle_result=='手动关闭成功' || scope.row.handle_result == '一键式应急端口开启成功' || scope.row.handle_result == '手动开启成功' || scope.row.handle_result == '一键式应急端口关闭成功' || scope.row.handle_result == '定时任务关闭成功' || scope.row.handle_result == '定时任务开启成功' ? 'success' : 'danger'"
           disable-transitions>{{scope.row.handle_result}}</el-tag>
       </template>
     </el-table-column>
@@ -930,6 +928,7 @@ export default {
                     this.$message.success("新增人员成功！");
                     this.editStaffDialog = false;
                     this.$refs.form.resetFields();
+                    this.staffDialogVisible=false;
                     this.staffManage();
                   } else {
                     this.$message.error("新增人员失败！");
@@ -977,8 +976,8 @@ export default {
                   if (res.data.errcode == "0") {
                     this.$message.success("修改人员成功！");
                     // console.log(this.EditStaffform)
-                    this.staffManage();
                     this.editStaffDialog = false;
+                    this.staffDialogVisible=false;
                     this.staffManage();
                   } else {
                     this.$message.error("修改人员失败！");
@@ -1057,6 +1056,7 @@ export default {
                   if (res.data.errcode == "0") {
                     this.$message.success("新增终端成功！");
                     this.editTerminalsDialog = false;
+                    this.terminalsDialogVisible=false;
                     this.terminalManage();
                   } else {
                     this.$message.error("新增终端失败！");
@@ -1087,16 +1087,16 @@ export default {
         this.logDialogTableVisible = true;
         this.loading = false;
         this.logData = res.data.data
-        console.log(this.logData,'ooo')
+        // console.log(this.logData,'ooo')
         let time = []
         this.logData.forEach(item => {
           time.push(item.handle_time)
         })
-        console.log(time,'ii')
+        // console.log(time,'ii')
         this.filterTime = time.map(item => {
           return { text:item,value:item}
         })
-        console.log(this.filterTime,'ppp')
+        // console.log(this.filterTime,'ppp')
 
       }
       else{
@@ -1178,8 +1178,8 @@ export default {
                 .then(res => {
                   if (res.data.errcode == "0") {
                     this.$message.success("修改终端成功！");
-                    // console.log(this.EditTerminalsform)
                     this.editTerminalsDialog = false;
+                    this.terminalsDialogVisible=false;
                     this.terminalManage();
                   } else {
                     this.$message.error("修改终端失败！");
@@ -1476,11 +1476,12 @@ cursor:pointer;//鼠标变小手
         width: 100%;
         height: 71px;
         .refresh {
-           background-color:#409eff;
-    position: relative;
-    top: -29px;
-        height: 36px;
-    right: -306px;
+          background-color:#409eff;
+          position: relative;
+          top: -29px;
+          margin-right:-528px;
+         height: 36px;
+    // right: -306px;
         }
         .oprations_btns {
           width: 659px;
