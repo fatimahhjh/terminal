@@ -28,6 +28,8 @@ export default {
   },
   methods: {
     upload(fileObj) {
+      console.log(fileObj.file.name)
+       this.$emit('selectedFileName',fileObj.file.name);
       const formData = new FormData();
       formData.append("file", fileObj.file);
       // formData.append("type", fileObj.file.type);
@@ -44,8 +46,11 @@ export default {
           if (errcode == "0") {
             this.$message.success("上传成功");
             this.uploadbeha = true;
-            this.staffManage();
+            if(this.title=="批量上传新增终端"){
             this.terminalManage();
+            }else{
+            this.staffManage();
+            }
             //  文件上传成功
           } else {
             this.$message.error("数据库插入错误");

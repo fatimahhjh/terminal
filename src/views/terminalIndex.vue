@@ -106,7 +106,7 @@
           </el-table-column>
           <el-table-column
             prop="remark"
-            label="最后一次操作"
+            label="最近一次操作"
             show-overflow-tooltip
           >
           </el-table-column>
@@ -145,7 +145,7 @@
                <el-button type="primary" size="mini" class="white_font" @click="downloadTerminal">下载批量上传模板</el-button>
     </div>
   </el-collapse-item>
-  <el-collapse-item title="批量导入终数据" name="2">
+  <el-collapse-item title="批量导入终端数据" name="2">
     <div class="float_right">
               <upload :submitUrl="terminalSubmitUrl" :terminalManage="terminalManage" :upload_btn="'uploadStaff_btn'" :title="'批量上传新增终端'"></upload>
     </div>
@@ -177,6 +177,9 @@
     </div>
   </el-collapse-item>
 </el-collapse>
+<span class="selectedFile">
+<el-button type="success" size="mini" icon="el-icon-document-checked">选择的文件</el-button>
+</span>
   <span slot="footer" class="dialog-footer">
     <el-button @click="UploadStaffDialog = false">取 消</el-button>
     <el-button type="primary" @click="UploadStaffDialog = false">确 定</el-button>
@@ -486,9 +489,15 @@
     <el-form-item label="终端地址" :label-width="formLabelWidth" prop="terminal_ip">
       <el-input v-model.trim="EditTerminalsform.terminal_ip" autocomplete="off"></el-input>
     </el-form-item>
-    <el-form-item label="终端分类" :label-width="formLabelWidth" prop="terminal_type">
+     <el-form-item label="终端分类" :label-width="formLabelWidth">
+    <el-select v-model="EditTerminalsform.terminal_type" placeholder="请选择终端分类">
+      <el-option label="通用终端" value="通用终端"></el-option>
+      <el-option label="应急终端" value="应急终端"></el-option>
+    </el-select>
+  </el-form-item>
+    <!-- <el-form-item label="终端分类" :label-width="formLabelWidth" prop="terminal_type">
       <el-input v-model.trim="EditTerminalsform.terminal_type" autocomplete="off"></el-input>
-    </el-form-item>
+    </el-form-item> -->
     <el-form-item label="交换机设备IP" :label-width="formLabelWidth" prop="switch_ip">
     <el-select v-model="EditTerminalsform.switch_ip"  @change="autoSelectName" placeholder="请选择交换机设备IP">
        <el-option
@@ -504,8 +513,11 @@
       <el-option label="JD49SW13-M2" value="JD49SW13-M2"></el-option>
       <el-option label="JD45SW01-M2" value="JD45SW01-M2"></el-option>
     </el-select>
-  </el-form-item>
-    <el-form-item label="交换机接入端口" :label-width="formLabelWidth" prop="switch_port">
+     </el-form-item>
+    <el-form-item v-if="termstitle=='新增终端'" label="交换机接入端口" :label-width="formLabelWidth" prop="switch_port">
+      <el-input v-model.trim="EditTerminalsform.switch_port" autocomplete="off"></el-input>
+    </el-form-item>
+    <el-form-item v-else label="交换机接入端口" :label-width="formLabelWidth">
       <el-input v-model.trim="EditTerminalsform.switch_port" autocomplete="off"></el-input>
     </el-form-item>
   </el-form>
@@ -617,7 +629,7 @@ export default {
       terminalSubmitUrl: "/ecc/device/upload",
       staffData: [],
       terminalsData: [],
-       activeNames: ['1'],
+       activeNames: ['1','2'],
       terminalList: [],
       termstitle: "",
       staffTitle: "",
@@ -722,6 +734,10 @@ export default {
         return this.tableData.slice(start, end);
       } else {
         return this.filterResult;
+         
+          let end = this.pageNum * this.pageSize;
+        let start = end - this.pageSize;
+        return this.filterResult.slice(start, end);
       }
     }
   },
@@ -749,7 +765,7 @@ export default {
       }
     },
     checkPort(rule, value, callback) {
-      if (value === "" || value == undefined) {
+      if (value === "") {
         callback(new Error("请输入接入交换机设备端口"));
       }
       if (this.portList.indexOf(value) == -1) {
@@ -760,9 +776,10 @@ export default {
     },
     // 查找指定终端
     onList(_list) {
-      // console.log(_list);
       this.filterResult = _list;
-      // console.log(this.filterResult)
+      var filterLength = parseInt(this.filterResult.length);
+      this.totalNum=filterLength
+      console.log(this.totalNum)
       if (this.filterResult.length == 0) {
         this.$message.error("查无此信息，请确认输入内容是否准确！");
       }
@@ -1043,6 +1060,7 @@ export default {
         type: "warning"
       })
         .then(() => {
+          console.log(this.EditTerminalsform)
           this.$refs.form.validate(valid => {
             if (!valid) {
               this.$message.warning("校验未通过");
@@ -1176,6 +1194,7 @@ export default {
               this.$http
                 .put("/ecc/device", this.EditTerminalsform)
                 .then(res => {
+                 
                   if (res.data.errcode == "0") {
                     this.$message.success("修改终端成功！");
                     this.editTerminalsDialog = false;
@@ -1210,9 +1229,10 @@ export default {
           if (res.data.errcode !== "0") {
             this.$message.warning("对不起，您没有此权限！");
           } else {
-             this.$confirm('确认一键式开启应急终端端口, 是否继续?', '提示', {
+             this.$confirm('确认一键式开启应急终端端口, 是否继续? <div>aaa</div> ', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
+          dangerouslyUseHTMLString: true,
           type: 'warning'
         }).then(() => {
             this.$http
@@ -1251,9 +1271,10 @@ export default {
           if (res.data.errcode !== "0") {
             this.$message.warning("对不起，您没有此权限！");
           } else {
- this.$confirm('确认一键式关闭应急终端端口, 是否继续?', '提示', {
+ this.$confirm('确认一键式关闭应急终端端口, 是否继续? <div>vcc</div> ', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
+           dangerouslyUseHTMLString: true,
           type: 'warning'
         }).then(() => {
            this.$http.get("/ecc/terminal/close/all").then(res => {
@@ -1348,14 +1369,42 @@ export default {
       })
         .then(() => {
           // console.log(this.timeRange,"kkk")
-          if (
+if(this.portStatus == "off"){
+  var obj3={
+    status: this.portStatus,
+              available_time:"",
+              switch_ip: this.switch_ip,
+              terminal_ip: this.terminal_ip,
+              location: this.location,
+              switch_name: this.switch_name,
+              switch_port: this.switch_port,
+              terminal_type: this.terminal_type
+  }
+   this.$http
+                .put("/ecc/terminal", obj3)
+                .then(res => {
+                  if (res.data.errcode !== "0") {
+                    this.$message.error("端口关闭失败！");
+                  } else {
+                    this.$message.success("端口关闭成功！");
+                    this.portOnOffDialogVisible = false;
+                    this.loadData();
+                    console.log(obj3);
+                  }
+                })
+                .catch(res => {
+                  this.$message.error("访问失败！");
+                });
+}else{
+            if (
             (this.timeRange == "" &&
               this.portStatus == "on" &&
               this.pickTime == "选择时间段") ||
-            this.pickTime == ""
+            (this.pickTime == "" && this.portStatus=="on")
           ) {
             this.$message.warning("请选择开启端口的时间段!");
-          } else {
+          }
+           else {
             var obj1 = {
               status: this.portStatus,
               available_time: this.pickTime,
@@ -1411,6 +1460,7 @@ export default {
                 });
             }
           }
+}
         })
         .catch(() => {
           this.$message({
@@ -1676,6 +1726,9 @@ cursor:pointer;//鼠标变小手
     text-align: initial;
     padding: 25px 30px 43px;
   }
+}
+.selectedFile{
+  float: left;
 }
 .failedDialogclose {
   color: #e4e7ed;
