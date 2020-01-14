@@ -265,7 +265,7 @@
       <el-input v-model.trim="EditStaffform.united_iden_num" autocomplete="off"></el-input>
     </el-form-item>
     <el-form-item label="部门" :label-width="formLabelWidth" prop="department">
-      <el-input v-model.trim="EditStaffform.department" placeholder="请输入数据中心xxx部" autocomplete="off"></el-input>
+      <el-input v-model.trim="EditStaffform.department" placeholder="请输入数据中心XX部" autocomplete="off"></el-input>
     </el-form-item>
   </el-form>
   <div slot="footer" class="dialog-footer">
@@ -317,6 +317,7 @@
     <el-table-column
       prop="switch_port"
       label="交换机接入端口"
+      width="150px"
     >
     </el-table-column>
     <el-table-column label="操作" width='200px'>
@@ -439,11 +440,12 @@
       label="操作时间"
       sortable
       column-key="column-key"
-      :filters="[{text: '2016-05-01', value: '2016-05-01'}, {text: '2016-05-02', value: '2016-05-02'}, {text: '2016-05-03', value: '2016-05-03'}, {text: '2016-05-04', value: '2016-05-04'}]"
+      :filters="filterTime"
       :filter-method="filterHandler"
       >
     </el-table-column>
     <el-table-column
+
       prop="username"
       label="操作用户"
       width="120">
@@ -467,7 +469,7 @@
       :filters="[{ text: '手动关闭成功', value: '手动关闭成功' },{ text: '手动关闭失败', value: '手动关闭失败' },{ text: '手动开启成功', value: '手动开启成功' }, { text: '手动开启失败', value: '手动开启失败' }, { text: '一键式应急端口开启失败', value: '一键式应急端口开启失败' }
       , { text: '一键式应急端口开启成功', value: '一键式应急端口开启成功' }, { text: '一键式应急端口关闭失败', value: '一键式应急端口关闭失败' }, { text: '一键式应急端口关闭成功', value: '一键式应急端口关闭成功' }, { text: '定时任务开启成功', value: '定时任务开启成功' }
       , { text: '定时任务开启失败', value: '定时任务开启失败' }, { text: '定时任务关闭失败', value: '定时任务关闭失败' }, { text: '定时任务关闭成功', value: '定时任务关闭成功' }]"
-      :filter-method="filterTag"
+      :filter-method="filterHandleResult"
       filter-placement="bottom-end">
       <template slot-scope="scope">
         <el-tag
@@ -693,6 +695,9 @@ export default {
       },
       formLabelWidth: "135px",
       INC_NUMBER_LIST: [],
+      filterTime:[],
+      filterText:[],
+      filterValue:[],
       listIncNum: [],
       hint:"",
       switch_port: "",
@@ -738,9 +743,9 @@ export default {
     },
     checkDepartment(rule, value, callback) {
       if (value === "" || value == undefined) {
-        callback(new Error("请输入部门"));
+        callback(new Error("请输入部门(数据中心XX部)"));
       } else if (this.$root.Hub.department !== value) {
-        callback(new Error("您没有权限新增该部门人员信息！"));
+        callback(new Error("您没有权限新增该部门人员信息！按(数据中心XX部)填写"));
       } else {
         callback();
       }
@@ -846,13 +851,13 @@ export default {
       this.staffTitle = "修改使用人员信息";
       let _row = row;
       if (
-        this.$root.Hub.department == "据中心运行一部" &&
-        _row.department == "数据中心网络一部"
+        this.$root.Hub.department=="数据中心运行一部" &&
+        _row.department=="数据中心网络一部"
       ) {
         this.$message.warning("您没有权限修改网络一部人员信息！");
       } else if (
-        this.$root.Hub.department == "数据中心网络一部" &&
-        _row.department == "数据中心运行一部"
+        this.$root.Hub.department=="数据中心网络一部" &&
+        _row.department=="数据中心运行一部"
       ) {
         this.$message.warning("您没有权限修改运行一部人员信息！");
       } else {
@@ -1076,15 +1081,23 @@ export default {
     },
     // 展示定时任务日志
     showLog() {
-      this.logDialogTableVisible=true;
     this.$http.get('/ecc/log/download')
     .then(res=>{
-      if(res.data.errcode==0){
-        this.loading=false;
-        this.logData=res.data.data
-        for (let i = 0; i < this.logData.length; i++){
-        this.hanleResultLists.push(this.logData[i].handle_result)
-        }
+      if(res.data.errcode == 0){
+        this.logDialogTableVisible = true;
+        this.loading = false;
+        this.logData = res.data.data
+        console.log(this.logData,'ooo')
+        let time = []
+        this.logData.forEach(item => {
+          time.push(item.handle_time)
+        })
+        console.log(time,'ii')
+        this.filterTime = time.map(item => {
+          return { text:item,value:item}
+        })
+        console.log(this.filterTime,'ppp')
+
       }
       else{
         this.$message.error("操作日志数据获取失败！")
@@ -1293,8 +1306,8 @@ export default {
       clearFilter() {
         this.$refs.filterTable.clearFilter();
       },
-      filterTag(value, row) {
-        return row.tag === value;
+      filterHandleResult(value, row) {
+        return row.handle_result === value;
       },
       filterHandler(value, row, column) {
         const property = column['property'];
@@ -1463,7 +1476,7 @@ cursor:pointer;//鼠标变小手
         width: 100%;
         height: 71px;
         .refresh {
-           background-color:rgb(157, 157, 236) ;
+           background-color:#409eff;
     position: relative;
     top: -29px;
         height: 36px;
@@ -1474,8 +1487,8 @@ cursor:pointer;//鼠标变小手
           margin-left: -13px;
           margin-left: -44px;
           .staff_btn {
-            background-color: rgb(231, 116, 21);
-            border: 1px solid rgb(231, 116, 21);
+            background-color:  #fe6845;
+            border: 1px solid  #fe6845;
             margin-left: 30px;
           }
           .terminal_btn {
@@ -1484,17 +1497,17 @@ cursor:pointer;//鼠标变小手
             margin-left: 30px;
           }
           .downLog {
-            background-color: rgb(218, 180, 76);
-            border: 1px solid rgb(218, 180, 76);
+            background-color:  #fe6845;
+            border: 1px solid  #fe6845;
           }
           .downTime {
             margin-left: 30px;
-            background-color: rgb(218, 140, 76);
-            border: 1px solid rgb(218, 140, 76);
+            background-color:  #fe6845;
+            border: 1px solid  #fe6845;
           }
           .emergencyOn_btn {
-            background-color: rgb(207, 79, 90);
-            border: 1px solid rgb(207, 79, 90);
+            background-color: rgb(194, 13, 28);
+            border: 1px solid rgb(194, 13, 28);
             margin-left: 30px;
           }
           .emergencyOff_btn {
