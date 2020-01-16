@@ -147,13 +147,12 @@
   </el-collapse-item>
   <el-collapse-item title="批量导入终端数据" name="2">
     <div class="float_right">
-              <upload :submitUrl="terminalSubmitUrl" :terminalManage="terminalManage" :upload_btn="'uploadStaff_btn'" :title="'批量上传新增终端'"></upload>
+              <upload :submitUrl="terminalSubmitUrl" :offUploadTermDialog="offUploadTermDialog" :terminalManage="terminalManage" :upload_btn="'uploadStaff_btn'" :title="'批量上传新增终端'"></upload>
     </div>
   </el-collapse-item>
 </el-collapse>
   <span slot="footer" class="dialog-footer">
-    <el-button @click="UploadTermDialog = false">取 消</el-button>
-    <el-button type="primary" @click="UploadTermDialog = false">确 定</el-button>
+    <el-button size="mini" type="info" class="white_font" @click="offUploadTermDialog">关闭弹框</el-button>
   </span>
 </el-dialog>
 
@@ -173,16 +172,15 @@
   </el-collapse-item>
   <el-collapse-item title="批量导入人员数据" name="2">
     <div class="float_right">
-      <upload :submitUrl="staffSubmitUrl" :staffManage="staffManage" :upload_btn="'uploadTerms_btn'" :title="'批量上传新增人员'"></upload>
+      <upload :submitUrl="staffSubmitUrl" :offUploadStaffDialog="offUploadStaffDialog"  :staffManage="staffManage" :upload_btn="'uploadTerms_btn'" :title="'批量上传新增人员'"></upload>
     </div>
   </el-collapse-item>
 </el-collapse>
 <span class="selectedFile">
-<el-button type="success" size="mini" icon="el-icon-document-checked">选择的文件</el-button>
+<!-- <el-button type="success" size="mini" icon="el-icon-document-checked">选择的文件</el-button> -->
 </span>
   <span slot="footer" class="dialog-footer">
-    <el-button @click="UploadStaffDialog = false">取 消</el-button>
-    <el-button type="primary" @click="UploadStaffDialog = false">确 定</el-button>
+    <el-button type="info" class="white_font" size="mini" @click="offUploadStaffDialog">关闭弹框</el-button>
   </span>
 </el-dialog>
 
@@ -557,6 +555,120 @@
           >
         </span>
       </el-dialog>
+      <!--  一键关闭前确认框-->
+         <el-dialog
+        title="一键式应急终端端口关闭确认框"
+        :visible.sync="confirmOffVisible"
+        width="80%"
+        center
+      >
+       <span class="middle-place">
+          <el-button
+            type="info"
+            @click="confirmOffVisible = false"
+            size="mini"
+            >取消关闭</el-button
+          >
+          <el-button
+            type="primary"
+            @click="confirmCloseAll"
+            size="mini"
+            >确认一键关闭</el-button
+          >
+        </span>
+        <el-table
+      :data="confirmData"
+      style="width: 100%">
+       <el-table-column
+        prop="terminal_type"
+        label="终端类型">
+      </el-table-column>
+      <el-table-column
+        prop="location"
+        label="物理位置"
+       >
+      </el-table-column>
+      <el-table-column
+        prop="terminal_ip"
+        label="终端地址"
+        >
+      </el-table-column>
+      <el-table-column
+        prop="switch_ip"
+        label="交换机地址">
+      </el-table-column>
+        <el-table-column
+        prop="status"
+        label="状态">
+      </el-table-column>
+        <el-table-column
+        prop="switch_name"
+        label="交换机名称">
+      </el-table-column>
+        <el-table-column
+        prop="switch_port"
+        label="交换机端口">
+      </el-table-column>
+      
+    </el-table>
+      </el-dialog>
+      <!-- 一键开启前确认框 -->
+       <el-dialog
+        title="一键式应急终端端口开启确认框"
+        :visible.sync="confirmVisible"
+        width="80%"
+        center
+      >
+       <span class="middle-place">
+          <el-button
+            type="info"
+            @click="confirmVisible = false"
+            size="mini"
+            >取消一键开启</el-button
+          >
+          <el-button
+            type="primary"
+            @click="confirmOpenAll"
+            size="mini"
+            >确认一键开启</el-button
+          >
+        </span>
+        <el-table
+      :data="confirmData"
+      style="width: 100%">
+       <el-table-column
+        prop="terminal_type"
+        label="终端类型">
+      </el-table-column>
+      <el-table-column
+        prop="location"
+        label="物理位置"
+       >
+      </el-table-column>
+      <el-table-column
+        prop="terminal_ip"
+        label="终端地址"
+        >
+      </el-table-column>
+      <el-table-column
+        prop="switch_ip"
+        label="交换机地址">
+      </el-table-column>
+        <el-table-column
+        prop="status"
+        label="状态">
+      </el-table-column>
+        <el-table-column
+        prop="switch_name"
+        label="交换机名称">
+      </el-table-column>
+        <el-table-column
+        prop="switch_port"
+        label="交换机端口">
+      </el-table-column>
+      
+    </el-table>
+      </el-dialog>
       <!-- 一键开启成功对话框 -->
       <el-dialog
         title="一键式应急终端端口开启提示"
@@ -612,6 +724,8 @@ export default {
       emergencyOnDialogVisible: false,
       emergencyOffDialogVisible: false,
       succeedDialogVisible: false,
+      confirmVisible:false,
+      confirmOffVisible:false,
       succeedOffDialogVisible: false,
       multiEmerOnValue: "on",
       multiEmerOffValue: "off",
@@ -621,6 +735,7 @@ export default {
       pickTime: "",
       timeRange: "",
       tableData: [],
+      confirmData:[],
       newTime: "",
       portList: [],
       filterWord: "",
@@ -719,6 +834,7 @@ export default {
       username: "",
       totalSuccessOff: "",
       totalSuccess: "",
+      emergencyLists:[],
       loading: true
     };
   },
@@ -1140,10 +1256,12 @@ export default {
     // 上传人员弹框
     showUploadStaffDialog(){
     this.UploadStaffDialog=true;
+    this.staffDialogVisible=false;
     },
     // 上传终端弹框
     showUploadTermDialog(){
-     this.UploadTermDialog=true; 
+     this.UploadTermDialog=true;
+     this.terminalsDialogVisible=false;
     },
     // 删除终端
     deleteTerminals(terminal_ip) {
@@ -1222,6 +1340,26 @@ export default {
         });
     },
     // 一键应急开启端口
+    confirmOpenAll(){
+      this.confirmVisible=false;
+                  this.$http
+                          .get("/ecc/terminal/open/all")
+                          .then(res => {
+                            this.totalSuccess = res.data.total;
+                            this.hint=res.data.errcode;
+                            if (res.data.errcode == "0") {
+                              this.succeedDialogVisible = true;
+                            } else {
+                              this.succeedDialogVisible = false;
+                              this.$message.error("一键式应急开启失败！");
+                            }
+                          })
+                          .catch(res => {
+                            this.$message.error("访问失败！");
+                          });
+    },
+
+    // 一键应急开启端口预览
     emergencyOnekeyOn() {
       this.$http
         .get("/ecc/auth/manager")
@@ -1229,39 +1367,38 @@ export default {
           if (res.data.errcode !== "0") {
             this.$message.warning("对不起，您没有此权限！");
           } else {
-             this.$confirm('确认一键式开启应急终端端口, 是否继续? <div>aaa</div> ', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          dangerouslyUseHTMLString: true,
-          type: 'warning'
-        }).then(() => {
-            this.$http
-              .get("/ecc/terminal/open/all")
-              .then(res => {
-                this.totalSuccess = res.data.total;
-                this.hint=res.data.errcode;
-                if (res.data.errcode == "0") {
-                  this.succeedDialogVisible = true;
-                } else {
-                  this.succeedDialogVisible = false;
-                  this.$message.error("一键式应急开启失败！");
-                }
-              })
-              .catch(res => {
-                this.$message.error("访问失败！");
-              });
-         
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消一键式开启应急终端端口'
-          });
-        });
+            this.confirmVisible=true;
+                  this.$http.get('/ecc/terminal/all/port')
+                  .then(res=>{
+                    if(res.data.errcode == '0'){
+                    this.confirmData=res.data.data;
+                    this.confirmVisible=true;
+                  }else{
+                    this.$message.error('数据获取失败！')
+                  }
+                })
           }
         })
         .catch(res => {
           this.$message.error("访问失败！");
         });
+    },
+     // 一键应急关闭端口预览
+    confirmCloseAll(){
+      this.confirmOffVisible=false;
+      this.$http.get("/ecc/terminal/close/all")
+      .then(res => {
+              this.totalSuccessOff = res.data.total;
+              this.hint=res.data.errcode
+              if (res.data.errcode == "0") {
+                this.succeedOffDialogVisible = true;
+              } else {
+                this.$message.error("一键式应急关闭失败！");
+              }
+            })
+      .catch(res=>{
+        this.$message.error("访问失败！")
+      })
     },
     // 一键应急端口关闭
     emergencyOnekeyOff() {
@@ -1271,34 +1408,29 @@ export default {
           if (res.data.errcode !== "0") {
             this.$message.warning("对不起，您没有此权限！");
           } else {
- this.$confirm('确认一键式关闭应急终端端口, 是否继续? <div>vcc</div> ', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-           dangerouslyUseHTMLString: true,
-          type: 'warning'
-        }).then(() => {
-           this.$http.get("/ecc/terminal/close/all").then(res => {
-              this.totalSuccessOff = res.data.total;
-              this.hint=res.data.errcode
-              if (res.data.errcode == "0") {
-                this.succeedOffDialogVisible = true;
-              } else {
-                this.$message.error("一键式应急关闭失败！");
-              }
-            });
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消一键式关闭应急终端端口'
-          });
-        });
+             this.$http.get('/ecc/terminal/all/port')
+                  .then(res=>{
+                    if(res.data.errcode == '0'){
+                    this.confirmData=res.data.data;
+                    this.confirmOffVisible=true;
+                  }else{
+                    this.$message.error('数据获取失败！')
+                  }
+                })
           }
         })
         .catch(res => {
           this.$message.error("访问失败！");
         });
     },
-
+// 关闭上传终端的弹框
+offUploadTermDialog(){
+  this.UploadTermDialog=false;
+},
+// 关闭上传人员的弹框
+offUploadStaffDialog(){
+  this.UploadStaffDialog=false;
+},
     // 取消端口管理
     canclePortMana() {
       this.portOnOffDialogVisible = false;
@@ -1611,6 +1743,7 @@ cursor:pointer;//鼠标变小手
     top: 19px;
     left: 42px;
   }
+ 
   .middle_place1 {
     position: relative;
     top: 17px;
@@ -1727,9 +1860,28 @@ cursor:pointer;//鼠标变小手
     padding: 25px 30px 43px;
   }
 }
+.el-message-box {
+    display: inline-block;
+    width: 820px;
+    padding-bottom: 10px;
+    vertical-align: middle;
+    background-color: #FFF;
+    border-radius: 4px;
+    border: 1px solid #EBEEF5;
+    font-size: 18px;
+    -webkit-box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+    box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+    text-align: left;
+    overflow: hidden;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
 .selectedFile{
   float: left;
 }
+.middle-place{
+  margin-left: 40%;
+  }
 .failedDialogclose {
   color: #e4e7ed;
 }

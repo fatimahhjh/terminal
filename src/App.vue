@@ -188,7 +188,7 @@ export default {
   },
   mounted() {
     document.cookie = "username=hjhhhhh";
-    document.cookie = "department=数据中心网络";
+    document.cookie = "department=数据中心网络一部";
     let name = getCookie("username");
     this.$root.Hub.username = name.replace(/\"/g, "");
     let department = getCookie("department");

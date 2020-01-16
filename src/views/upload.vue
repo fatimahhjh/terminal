@@ -2,82 +2,70 @@
   <div class="file-load">
     <el-upload
       class="upload-demo"
-      action
-      ref="newupload"
-      :auto-upload="true"
-      accept=".xlsx, .xls"
-      :show-file-list="false"
-      content_type
-      mutiplepart
-      :http-request="upload"
+      ref="upload"
+      :on-success="uploadSuccess"
+      :action="submitUrl"
+      :on-preview="handlePreview"
+      :on-remove="handleRemove"
+      :file-list="fileList"
+      :auto-upload="false"
     >
-      <div class="uploadBtn">
-        <el-tag effect="dark" :class="upload_btn">{{ title }}</el-tag>
-      </div>
+      <el-button slot="trigger" size="small"  class="white_font" type="primary">选取文件</el-button>
+      <el-button
+        style="margin-left: 10px;"
+        size="small"
+        class="white_font"
+        type="success"
+        @click="submitUpload"
+        >上传到服务器</el-button
+      >
+      <div slot="tip" class="el-upload__tip">只能上传excecl文件</div>
     </el-upload>
   </div>
 </template>
 
 <script>
 export default {
-  props: ["submitUrl", "title", "upload_btn", "staffManage", "terminalManage"],
+  props: ["submitUrl", "title", "offUploadTermDialog","offUploadStaffDialog", "upload_btn", "staffManage", "terminalManage"],
   data() {
     return {
-      uploadbeha: false
+      uploadbeha: false,
+      fileList: []
     };
   },
   methods: {
-    upload(fileObj) {
-      console.log(fileObj.file.name)
-       this.$emit('selectedFileName',fileObj.file.name);
-      const formData = new FormData();
-      formData.append("file", fileObj.file);
-      // formData.append("type", fileObj.file.type);
-      this.$http
-        .request({
-          url: this.submitUrl,
-          method: "post",
-          data: formData
-        })
-        .then(res => {
-          let {
-            data: { errcode }
-          } = res;
-          if (errcode == "0") {
-            this.$message.success("上传成功");
-            this.uploadbeha = true;
-            if(this.title=="批量上传新增终端"){
-            this.terminalManage();
-            }else{
-            this.staffManage();
-            }
-            //  文件上传成功
-          } else {
-            this.$message.error("数据库插入错误");
-          }
+    uploadSuccess(response) {
+      let { errcode } = response;
+      if (errcode == "0") {
+        this.uploadbeha = true;
+        this.$message({
+          showClose: true,
+          duration: 0,
+          message: "上传成功",
+          type: "success"
         });
+        if (this.title == "批量上传新增终端") {
+         this.offUploadTermDialog();
+          this.terminalManage();
+        } else {
+          this.staffManage();
+         this.offUploadStaffDialog();
+        }
+        //  文件上传成功
+      } else {
+        this.$message.error("数据库插入错误");
+      }
+    },
+    submitUpload() {
+      this.$refs.upload.submit();
+    },
+    handleRemove(file, fileList) {
+      console.log(file, fileList);
+    },
+    handlePreview(file) {
+      console.log(file);
     }
-    // clickUpload() {
-    //   this.$http
-    //     .get("/ecc/auth/operation")
-    //     .then(res => {
-    //       if (res.data.errcode !== "0") {
-    //         this.limit = res.data.errcode;
-    //         this.$message.warning("对不起，您没有此权限！");
-    //       } else {
-    //         this.limit = res.data.errcode;
-    //         // console.log(this.limit);
-    //       }
-    //     })
-    //     .catch(res => {
-    //       this.$message.error("访问失败！");
-    //     });
-    // }
   }
-  // 文件失败
-  // onError(response) {
-  //   this.$message.error("文件上传失败");
-  // }
 };
 </script>
 
@@ -91,6 +79,10 @@ export default {
   width: 130px;
   margin-right: -10px;
 }
+ /deep/.white_font span {
+      color: white;
+      font-size: 12px;
+    }
 .uploadTerms_btn {
   // background-color: rgb(236, 141, 69);
   // border: 1px solid rgb(236, 141, 69);
