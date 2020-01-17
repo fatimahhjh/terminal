@@ -190,8 +190,11 @@ export default {
     document.cookie = "username=hjhhhhh";
     document.cookie = "department=数据中心网络一部";
     let name = getCookie("username");
+    // tokenCookie["name"] = HttpUtility.UrlEncode(name); // .UrlEncode目的是ie内核中文不乱码
+     // .UrlEncode目的是ie内核中文不乱码
     this.$root.Hub.username = name.replace(/\"/g, "");
     let department = getCookie("department");
+    // tokenCookie["department"] = HttpUtility.UrlEncode(department);
     this.$root.Hub.department = department.replace(/\"/g, "");
     if (this.$root.Hub.username == "") {
       this.login();

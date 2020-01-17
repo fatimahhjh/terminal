@@ -69,11 +69,10 @@ export default {
 .search-box {
   border: 1px solid #eee;
   background-color: #f5f7f9;
-  padding-left: 10px;
   border-radius: 8px;
-  margin-bottom: 12px;
-      width: 261px;
-  position: relative;
+  margin-left: -100px;
+  float: right;
+  width: 261px;
   .el-icon-search:before {
     content: "\e778";
     position: absolute;

@@ -42,13 +42,13 @@
               >
               
             </div>
-              <el-tooltip class="item" effect="light" content="点击刷新获取实时数据" placement="left-start">
+            <div class="nav_right">
+       <el-tooltip class="item" effect="light" content="点击刷新获取实时数据" placement="left-start">
             <el-button class="refresh" :disabled="disabled" @click="refreshData">
                 <i class="el-icon-refresh"></i>
             </el-button>
             </el-tooltip>
-            <div class="search_box">
-      <search
+       <search
         @list="onList"
         @filteStr="onFilteStr"
         :filterDataList="terminalList"
@@ -245,7 +245,7 @@
     </el-pagination>
       </el-dialog>
 <!-- 这个是修改使用人员信息的弹框 -->
-<el-dialog :title="staffTitle" :visible.sync="editStaffDialog">
+<el-dialog :title="staffTitle" :visible.sync="editStaffDialog"  :before-close="closeEditStaff">
   <el-form :model="EditStaffform" :rules="rules"  ref="form">
     <el-form-item label="姓名" :label-width= "formLabelWidth" prop="name">
       <el-input v-model.trim="EditStaffform.name" autocomplete="off"></el-input>
@@ -479,7 +479,7 @@
   </el-table>
   </el-dialog>
       <!-- 这是编辑终端弹框 -->
-      <el-dialog :title="termstitle" :visible.sync="editTerminalsDialog">
+      <el-dialog :title="termstitle" :visible.sync="editTerminalsDialog" :before-close="closeTermDialog">
   <el-form :model="EditTerminalsform" :rules="rules"  ref="form">
     <el-form-item label="物理位置" :label-width="formLabelWidth" prop="location">
       <el-input v-model.trim="EditTerminalsform.location" autocomplete="off"></el-input>
@@ -513,10 +513,10 @@
     </el-select>
      </el-form-item>
     <el-form-item v-if="termstitle=='新增终端'" label="交换机接入端口" :label-width="formLabelWidth" prop="switch_port">
-      <el-input v-model.trim="EditTerminalsform.switch_port" autocomplete="off"></el-input>
+      <el-input @change="onBlur()" v-model.trim="EditTerminalsform.switch_port" autocomplete="off"></el-input>
     </el-form-item>
-    <el-form-item v-else label="交换机接入端口" :label-width="formLabelWidth">
-      <el-input v-model.trim="EditTerminalsform.switch_port" autocomplete="off"></el-input>
+    <el-form-item v-else label="交换机接入端口" :label-width="formLabelWidth" prop="switch_port">
+      <el-input @change="onBlur()" v-model.trim="EditTerminalsform.switch_port" autocomplete="off"></el-input>
     </el-form-item>
   </el-form>
   <div slot="footer" class="dialog-footer">
@@ -562,12 +562,12 @@
         width="80%"
         center
       >
-       <span class="middle-place">
+       <span class="middlePlace">
           <el-button
             type="info"
             @click="confirmOffVisible = false"
             size="mini"
-            >取消关闭</el-button
+            >取消一键关闭</el-button
           >
           <el-button
             type="primary"
@@ -598,10 +598,6 @@
         label="交换机地址">
       </el-table-column>
         <el-table-column
-        prop="status"
-        label="状态">
-      </el-table-column>
-        <el-table-column
         prop="switch_name"
         label="交换机名称">
       </el-table-column>
@@ -609,7 +605,10 @@
         prop="switch_port"
         label="交换机端口">
       </el-table-column>
-      
+       <el-table-column
+        prop="status"
+        label="状态">
+      </el-table-column>
     </el-table>
       </el-dialog>
       <!-- 一键开启前确认框 -->
@@ -619,7 +618,7 @@
         width="80%"
         center
       >
-       <span class="middle-place">
+       <span class="middlePlace">
           <el-button
             type="info"
             @click="confirmVisible = false"
@@ -653,11 +652,7 @@
       <el-table-column
         prop="switch_ip"
         label="交换机地址">
-      </el-table-column>
-        <el-table-column
-        prop="status"
-        label="状态">
-      </el-table-column>
+      </el-table-column> 
         <el-table-column
         prop="switch_name"
         label="交换机名称">
@@ -666,7 +661,10 @@
         prop="switch_port"
         label="交换机端口">
       </el-table-column>
-      
+      <el-table-column
+        prop="status"
+        label="状态">
+      </el-table-column>
     </el-table>
       </el-dialog>
       <!-- 一键开启成功对话框 -->
@@ -787,7 +785,8 @@ export default {
           }
         ],
         switch_port: [
-          { required: true, validator: this.checkPort, trigger: "blur" }
+          { required: true, message: "请输入接入交换机端口",  trigger: "blur" },
+          { required: true, message: "请输入接入交换机端口",  trigger: "change" }
         ]
       },
       termType: [],
@@ -858,6 +857,12 @@ export default {
     }
   },
   methods: {
+    onBlur(){
+      let port = this.EditTerminalsform.switch_port;
+      if(this.portList.includes(port)) {
+        this.$message.warning('该端口已存在!')
+      }
+    },
     checkIdenNum(rule, value, callback) {
       let regNum = /^.{9,9}$/;
       if (value === "" || value == undefined) {
@@ -878,16 +883,6 @@ export default {
         callback(new Error("您没有权限新增该部门人员信息！按(数据中心XX部)填写"));
       } else {
         callback();
-      }
-    },
-    checkPort(rule, value, callback) {
-      if (value === "") {
-        callback(new Error("请输入接入交换机设备端口"));
-      }
-      if (this.portList.indexOf(value) == -1) {
-        callback();
-      } else {
-        callback(new Error("该端口已存在！"));
       }
     },
     // 查找指定终端
@@ -1013,7 +1008,7 @@ export default {
               .delete("/ecc/staff?united_iden_num=" + indenti_num)
               .then(res => {
                 if (res.data.errcode == "0") {
-                  this.$message.success("人员删除成功！");
+                  // this.$message.success("人员删除成功！");
                   this.staffManage();
                 } else {
                   this.$message.error("人员删除失败！");
@@ -1021,7 +1016,7 @@ export default {
               });
             this.$message({
               type: "success",
-              message: "删除成功!"
+              message: "人员删除成功!"
             });
           })
           .catch(() => {
@@ -1032,6 +1027,22 @@ export default {
           });
       }
     },
+     closeTermDialog(done) {
+        this.$confirm('确认关闭？')
+          .then(_ => {
+            done();
+            this.$refs.form.resetFields();
+          })
+          .catch(_ => {});
+      },
+    closeEditStaff(done) {
+        this.$confirm('确认关闭？')
+          .then(_ => {
+            done();
+            this.$refs.form.resetFields();
+          })
+          .catch(_ => {});
+      },
       handleClose(done) {
         this.$confirm('确认关闭？')
           .then(_ => {
@@ -1494,7 +1505,7 @@ offUploadStaffDialog(){
       },
     // 确认开关端口
     confirmPortOnOff() {
-      this.$confirm("确认对端口进行此操作？, 是否继续?", "提示", {
+      this.$confirm("确认对端口进行此操作, 是否继续?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"
@@ -1635,13 +1646,11 @@ if(this.portStatus == "off"){
 //@import url(); 引入公共css类
 .terminalIndex {  
   .el-breadcrumb {
-cursor:pointer;//鼠标变小手
     font-size: 16px;
     line-height: 3;
     margin: -27px 0 14px 26px;
   }
   .el_body {
-cursor:pointer;//鼠标变小手
     width: 100%;
     border-radius: 6px;
     background-color: #fff;
@@ -1659,13 +1668,14 @@ cursor:pointer;//鼠标变小手
         height: 71px;
         .refresh {
           background-color:#409eff;
-          position: relative;
-          top: -29px;
-          margin-right:-528px;
-         height: 36px;
+        //   position: relative;
+        //   top: -29px;
+        //   margin-right:-528px;
+        //  height: 36px;
     // right: -306px;
         }
         .oprations_btns {
+          cursor:pointer;//鼠标变小手
           width: 659px;
           margin-left: -13px;
           margin-left: -44px;
@@ -1769,10 +1779,11 @@ cursor:pointer;//鼠标变小手
   .multiUpload {
     float: left;
   }
-  .search_box {
-    margin-left: 989px;
-    margin-top: -69px;
-    width: 300px;
+  .nav_right{
+     width: 600px;
+    position: relative;
+    top: -30px;
+    float: right;
   }
   .btns_position {
     width: 250px;
@@ -1879,8 +1890,8 @@ cursor:pointer;//鼠标变小手
 .selectedFile{
   float: left;
 }
-.middle-place{
-  margin-left: 40%;
+.middlePlace{
+float: right;
   }
 .failedDialogclose {
   color: #e4e7ed;
