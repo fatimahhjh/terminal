@@ -10,14 +10,16 @@
       :file-list="fileList"
       :auto-upload="false"
     >
-      <el-button slot="trigger" size="small"  class="white_font" type="primary">选取文件</el-button>
+      <el-button slot="trigger" size="small" class="white_font" type="primary"
+        >选取文件</el-button
+      >
       <el-button
         style="margin-left: 10px;"
         size="small"
         class="white_font"
         type="success"
         @click="submitUpload"
-        >上传到服务器</el-button
+        >确定上传</el-button
       >
       <div slot="tip" class="el-upload__tip">只能上传excecl文件</div>
     </el-upload>
@@ -26,7 +28,15 @@
 
 <script>
 export default {
-  props: ["submitUrl", "title", "offUploadTermDialog","offUploadStaffDialog", "upload_btn", "staffManage", "terminalManage"],
+  props: [
+    "submitUrl",
+    "title",
+    "offUploadTermDialog",
+    "offUploadStaffDialog",
+    "upload_btn",
+    "staffManage",
+    "terminalManage"
+  ],
   data() {
     return {
       uploadbeha: false,
@@ -45,11 +55,11 @@ export default {
           type: "success"
         });
         if (this.title == "批量上传新增终端") {
-         this.offUploadTermDialog();
+          this.offUploadTermDialog();
           this.terminalManage();
         } else {
           this.staffManage();
-         this.offUploadStaffDialog();
+          this.offUploadStaffDialog();
         }
         //  文件上传成功
       } else {
@@ -79,10 +89,10 @@ export default {
   width: 130px;
   margin-right: -10px;
 }
- /deep/.white_font span {
-      color: white;
-      font-size: 12px;
-    }
+/deep/.white_font span {
+  color: white;
+  font-size: 12px;
+}
 .uploadTerms_btn {
   // background-color: rgb(236, 141, 69);
   // border: 1px solid rgb(236, 141, 69);
