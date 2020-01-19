@@ -261,7 +261,8 @@
     </el-select>
     </el-form-item>
     <el-form-item label="统一认证号" :label-width="formLabelWidth" prop="united_iden_num">
-      <el-input v-model.trim="EditStaffform.united_iden_num" autocomplete="off"></el-input>
+      <el-input v-if="staffTitle=='修改使用人员信息'" v-model.trim="EditStaffform.united_iden_num"  :disabled="true"></el-input>
+      <el-input v-else v-model.trim="EditStaffform.united_iden_num" autocomplete="off"></el-input>
     </el-form-item>
     <el-form-item label="部门" :label-width="formLabelWidth" prop="department">
       <el-input v-model.trim="EditStaffform.department" placeholder="请输入数据中心XX部" autocomplete="off"></el-input>
