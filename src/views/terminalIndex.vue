@@ -254,7 +254,7 @@
       <el-input v-model.trim="EditStaffform.job" autocomplete="off"></el-input>
     </el-form-item> -->
     <el-form-item label="岗位" :label-width="formLabelWidth">
-       <el-select v-model="EditStaffform.job" placeholder="请选择人员岗位">
+       <el-select :style="{display:'inline'}" v-model="EditStaffform.job" placeholder="请选择人员岗位">
       <el-option label="运行维护岗" value="运行维护岗"></el-option>
       <el-option label="运行值班经理岗" value="运行值班经理岗"></el-option>
       <el-option label="系统管理岗" value="系统管理岗"></el-option>
@@ -465,14 +465,14 @@
      <el-table-column
       prop="handle_result"
       label="操作结果"
-      :filters="[{ text: '手动关闭成功', value: '手动关闭成功' },{ text: '手动关闭失败', value: '手动关闭失败' },{ text: '手动开启成功', value: '手动开启成功' }, { text: '手动开启失败', value: '手动开启失败' }, { text: '一键式应急端口开启失败', value: '一键式应急端口开启失败' }
+      :filters="[{ text: '配置下发成功', value: '配置下发成功' },{ text: '一键关闭应急端口配置下发成功', value: '一键关闭应急端口配置下发成功' },{ text: '一键开启应急端口配置下发成功', value: '一键开启应急端口配置下发成功' },{ text: '手动关闭配置下发成功', value: '手动关闭配置下发成功' },{ text: '手动开启配置下发成功', value: '手动开启配置下发成功' },{ text: '定时任务配置下发成功', value: '定时任务配置下发成功' },{ text: '手动关闭成功', value: '手动关闭成功' },{ text: '手动关闭失败', value: '手动关闭失败' },{ text: '手动开启成功', value: '手动开启成功' }, { text: '手动开启失败', value: '手动开启失败' }, { text: '一键式应急端口开启失败', value: '一键式应急端口开启失败' }
       , { text: '一键式应急端口开启成功', value: '一键式应急端口开启成功' }, { text: '一键式应急端口关闭失败', value: '一键式应急端口关闭失败' }, { text: '一键式应急端口关闭成功', value: '一键式应急端口关闭成功' }, { text: '定时任务开启成功', value: '定时任务开启成功' }
       , { text: '定时任务开启失败', value: '定时任务开启失败' }, { text: '定时任务关闭失败', value: '定时任务关闭失败' }, { text: '定时任务关闭成功', value: '定时任务关闭成功' }]"
       :filter-method="filterHandleResult"
       filter-placement="bottom-end">
       <template slot-scope="scope">
          <el-tag
-          :type="scope.row.handle_result=='上传设备信息成功' || scope.row.handle_result=='删除设备信息成功' || scope.row.handle_result=='新增设备信息成功' || scope.row.handle_result=='上传人员信息成功' || scope.row.handle_result=='删除人员信息成功' || scope.row.handle_result=='新增人员信息成功' || scope.row.handle_result=='手动关闭成功' || scope.row.handle_result == '一键式应急端口开启成功' || scope.row.handle_result == '手动开启成功' || scope.row.handle_result == '一键式应急端口关闭成功' || scope.row.handle_result == '定时任务关闭成功' || scope.row.handle_result == '定时任务开启成功' ? 'success' : 'danger'"
+          :type="scope.row.handle_result=='配置下发成功' || scope.row.handle_result=='定时任务配置下发成功' || scope.row.handle_result=='手动开启配置下发成功' || scope.row.handle_result=='手动关闭配置下发成功' || scope.row.handle_result=='一键开启应急端口配置下发成功' || scope.row.handle_result=='一键关闭应急端口配置下发成功' || scope.row.handle_result=='上传设备信息成功' || scope.row.handle_result=='删除设备信息成功' || scope.row.handle_result=='新增设备信息成功' || scope.row.handle_result=='上传人员信息成功' || scope.row.handle_result=='删除人员信息成功' || scope.row.handle_result=='新增人员信息成功' || scope.row.handle_result=='手动关闭成功' || scope.row.handle_result == '一键式应急端口开启成功' || scope.row.handle_result == '手动开启成功' || scope.row.handle_result == '一键式应急端口关闭成功' || scope.row.handle_result == '定时任务关闭成功' || scope.row.handle_result == '定时任务开启成功' ? 'success' : 'danger'"
           disable-transitions>{{scope.row.handle_result}}</el-tag>
       </template>
     </el-table-column>
@@ -488,7 +488,7 @@
       <el-input v-model.trim="EditTerminalsform.terminal_ip" autocomplete="off"></el-input>
     </el-form-item>
      <el-form-item label="终端分类" :label-width="formLabelWidth">
-    <el-select v-model="EditTerminalsform.terminal_type" placeholder="请选择终端分类">
+    <el-select :style="{display:'inline'}" v-model="EditTerminalsform.terminal_type" placeholder="请选择终端分类">
       <el-option label="通用终端" value="通用终端"></el-option>
       <el-option label="应急终端" value="应急终端"></el-option>
     </el-select>
@@ -497,7 +497,7 @@
       <el-input v-model.trim="EditTerminalsform.terminal_type" autocomplete="off"></el-input>
     </el-form-item> -->
     <el-form-item label="交换机设备IP" :label-width="formLabelWidth" prop="switch_ip">
-    <el-select v-model="EditTerminalsform.switch_ip"  @change="autoSelectName" placeholder="请选择交换机设备IP">
+    <el-select :style="{display:'inline'}" v-model="EditTerminalsform.switch_ip"  @change="autoSelectName" placeholder="请选择交换机设备IP">
        <el-option
       v-for="item in switchIpOptions"
       :key="item.value"
@@ -507,7 +507,7 @@
     </el-select>
   </el-form-item>
       <el-form-item label="交换机设备名称" :label-width="formLabelWidth"  prop="switch_name">
-    <el-select v-model="EditTerminalsform.switch_name" placeholder="请选择交换机设备名称">
+    <el-select :style="{display:'inline'}" v-model="EditTerminalsform.switch_name" placeholder="请选择交换机设备名称">
       <el-option label="JD49SW13-M2" value="JD49SW13-M2"></el-option>
       <el-option label="JD45SW01-M2" value="JD45SW01-M2"></el-option>
     </el-select>
@@ -834,11 +834,18 @@ export default {
       totalSuccessOff: "",
       totalSuccess: "",
       emergencyLists:[],
-      loading: true
+      loading: true,
+      user:"",
+      userDepartment:""
     };
   },
   mounted() {
     this.loadData();
+     getUserInfo().then(res => {
+        this.user = res.data.data.username;
+        this.userDepartment = res.data.data.department;
+        // console.log(this.username);
+    });
   },
   computed: {
     terminalsTableList() {
@@ -849,7 +856,6 @@ export default {
         return this.tableData.slice(start, end);
       } else {
         return this.filterResult;
-         
           let end = this.pageNum * this.pageSize;
         let start = end - this.pageSize;
         return this.filterResult.slice(start, end);
@@ -860,7 +866,8 @@ export default {
     onBlur(){
       let port = this.EditTerminalsform.switch_port;
       if(this.portList.includes(port)) {
-        this.$message.warning('该端口已存在!')
+        this.$message.warning('该端口已存在!,请重新输入')
+        this.EditTerminalsform.switch_port=""
       }
     },
     checkIdenNum(rule, value, callback) {
@@ -879,9 +886,11 @@ export default {
     checkDepartment(rule, value, callback) {
       if (value === "" || value == undefined) {
         callback(new Error("请输入部门(数据中心XX部)"));
-      } else if (this.$root.Hub.department !== value) {
-        callback(new Error("您没有权限新增该部门人员信息！按(数据中心XX部)填写"));
-      } else {
+      }
+      //  else if (this.userDepartment !== value) {
+      //   callback(new Error("您没有权限新增该部门人员信息！按(数据中心XX部)填写"));
+      // } 
+      else {
         callback();
       }
     },
@@ -976,29 +985,27 @@ export default {
       // console.log(index,row)
       this.staffTitle = "修改使用人员信息";
       let _row = row;
-      if (
-        this.$root.Hub.department=="数据中心运行一部" &&
-        _row.department=="数据中心网络一部"
-      ) {
-        this.$message.warning("您没有权限修改网络一部人员信息！");
-      } else if (
-        this.$root.Hub.department=="数据中心网络一部" &&
-        _row.department=="数据中心运行一部"
-      ) {
-        this.$message.warning("您没有权限修改运行一部人员信息！");
-      } else {
-        this.EditStaffform = Object.assign({}, _row);
+         this.EditStaffform = Object.assign({}, _row);
         this.editStaffDialog = true;
-      }
+      // if (
+      //   this.userDepartment=="数据中心运行一部" &&
+      //   _row.department=="数据中心网络一部"
+      // ) {
+      //   this.$message.warning("您没有权限修改网络一部人员信息！");
+      // } else if (
+      //   this.userDepartment=="数据中心网络一部" &&
+      //   _row.department=="数据中心运行一部"
+      // ) {
+      //   this.$message.warning("您没有权限修改运行一部人员信息！");
+      // } else {
+     
+      // }
 
       //将每一行的数据赋值给Dialog弹框（这里是重点）
     },
     // 删除人员
     deleteStaff(indenti_num, department) {
-      if (this.$root.Hub.department !== department) {
-        this.$message.warning("您没有权限删除该部人员信息！");
-      } else {
-        this.$confirm("此操作将永久删除该人员, 是否继续?", "提示", {
+       this.$confirm("此操作将永久删除该人员, 是否继续?", "提示", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"
@@ -1025,7 +1032,10 @@ export default {
               message: "已取消删除"
             });
           });
-      }
+      // if (this.userDepartment !== department) {
+      //   this.$message.warning("您没有权限删除该部人员信息！");
+      // } else {
+      // }
     },
      closeTermDialog(done) {
         this.$confirm('确认关闭？')
@@ -1047,6 +1057,7 @@ export default {
         this.$confirm('确认关闭？')
           .then(_ => {
             done();
+      this.$refs.form.resetFields();
           })
           .catch(_ => {});
       },
@@ -1323,7 +1334,6 @@ export default {
               this.$http
                 .put("/ecc/device", this.EditTerminalsform)
                 .then(res => {
-                 
                   if (res.data.errcode == "0") {
                     this.$message.success("修改终端成功！");
                     this.editTerminalsDialog = false;
@@ -1767,10 +1777,10 @@ if(this.portStatus == "off"){
     top: 17px;
     left: 19px;
   }
-  /deep/.el-select {
-    display: inline;
-    position: relative;
-  }
+  // /deep/.el-select {
+  //   display: inline;
+  //   position: relative;
+  // }
   .addBtns {
     text-align: right;
     margin-right: 61px;

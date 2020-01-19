@@ -33,14 +33,14 @@
                   text-color="white"
                   active-text-color="white"
                 >
-                  <el-menu-item v-if="!$root.Hub.username" index="1">
+                  <el-menu-item v-if="!username" index="1">
                     <i class="el-icon-user-solid"></i>
                     未登录
                   </el-menu-item>
                   <el-submenu v-else index="2">
                     <template slot="title" class="login_text">
                       <i class="el-icon-user-solid"></i>
-                      {{ $root.Hub.username }}{{ $root.Hub.department }}
+                      {{ username }}{{ department }}
                     </template>
                     <el-menu-item index="2-1" @click="logout"
                       >退出登录</el-menu-item
@@ -156,10 +156,13 @@ import { getUserInfo } from "./utils/getUserInfo.js";
 export default {
   data() {
     return {
-      activeIndex: "1"
+      activeIndex: "1",
+      department: "",
+      username: ""
     };
   },
   methods: {
+    
     login() {
       window.location.href = "/login?next=" + window.location.href;
     },
@@ -187,18 +190,25 @@ export default {
     }
   },
   mounted() {
-    document.cookie = "username=hjhhhhh";
-    document.cookie = "department=数据中心网络一部";
-    let name = getCookie("username");
-    // tokenCookie["name"] = HttpUtility.UrlEncode(name); // .UrlEncode目的是ie内核中文不乱码
-     // .UrlEncode目的是ie内核中文不乱码
-    this.$root.Hub.username = name.replace(/\"/g, "");
-    let department = getCookie("department");
-    // tokenCookie["department"] = HttpUtility.UrlEncode(department);
-    this.$root.Hub.department = department.replace(/\"/g, "");
-    if (this.$root.Hub.username == "") {
-      this.login();
-    }
+    // console.log('www')
+    // document.cookie = "username=hjhhhhh";
+    // document.cookie = "department=数据中心网络一部";
+    //   this.login();
+    // let name = getCookie("username");
+    // this.$root.Hub.username = name.replace(/\"/g, "");
+    // let department = getCookie("department");
+    // this.$root.Hub.department = department.replace(/\"/g, "");
+    // if (this.$root.Hub.username == "") {
+    // }
+    getUserInfo().then(res => {
+      if ((res.data.errcode == "0")) {
+        this.username = res.data.data.username;
+        this.department = res.data.data.department;
+        // console.log(this.username);
+      } else {
+       this.login()
+      }
+    });
   }
 };
 </script>

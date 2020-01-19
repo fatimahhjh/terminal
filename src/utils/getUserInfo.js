@@ -1,4 +1,4 @@
 import axios from "axios"
 export function getUserInfo() {
-  return axios.get("getLogInfo")
+  return axios.get("/ecc/test/login")
 }
