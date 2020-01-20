@@ -46,6 +46,7 @@
        <el-tooltip class="item" effect="light" content="点击刷新获取实时数据" placement="left-start">
             <el-button class="refresh" :disabled="disabled" @click="refreshData">
                 <i class="el-icon-refresh"></i>
+                <span v-if="timeNum !='0'">{{timeNum}}</span>
             </el-button>
             </el-tooltip>
        <search
@@ -840,6 +841,7 @@ export default {
        UploadTermDialog:false,
        logDialogTableVisible:false,
       terminalsDialogVisible: false,
+      timeNum:'',
       EditStaffform: {
         name: "",
         job: "",
@@ -1540,12 +1542,14 @@ offUploadStaffDialog(){
     },
     aa() {
       let count = 1;
+      let sum = 30
       let i = setInterval(() => {
         if (count > 30) {
           clearInterval(i)
           this.disabled = false;
         } else {
           this.disabled = true;
+          this.timeNum = sum - count
         }
         count++;
       }, 1000);

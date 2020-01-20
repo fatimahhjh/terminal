@@ -190,6 +190,7 @@ export default {
     }
   },
   mounted() {
+    // console.log('www')
     // document.cookie = "username=hjhhhhh";
     // document.cookie = "department=数据中心网络一部";
     //   this.login();
@@ -203,6 +204,7 @@ export default {
       if ((res.data.errcode == "0")) {
         this.username = res.data.data.username;
         this.department = res.data.data.department;
+        // console.log(this.username);
       } else {
        this.login()
       }
