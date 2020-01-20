@@ -40,7 +40,7 @@
                   <el-submenu v-else index="2">
                     <template slot="title" class="login_text">
                       <i class="el-icon-user-solid"></i>
-                      {{ username }}{{ department }}
+                      {{ username }}&nbsp;{{ position }}
                     </template>
                     <el-menu-item index="2-1" @click="logout"
                       >退出登录</el-menu-item
@@ -158,7 +158,8 @@ export default {
     return {
       activeIndex: "1",
       department: "",
-      username: ""
+      username: "",
+      position:""
     };
   },
   methods: {
@@ -204,6 +205,7 @@ export default {
       if ((res.data.errcode == "0")) {
         this.username = res.data.data.username;
         this.department = res.data.data.department;
+        this.position =  res.data.data.job
         // console.log(this.username);
       } else {
        this.login()

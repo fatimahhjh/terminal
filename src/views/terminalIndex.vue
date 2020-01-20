@@ -62,7 +62,7 @@
           :data="terminalsTableList"
           tooltip-effect="dark"
           style="width:100%"
-          v-loading="loading"
+          v-loading="loadingData"
           element-loading-text="拼命加载中"
           element-loading-spinner="el-icon-loading"
           element-loading-background="rgba(0, 0, 0, 0.8)"
@@ -187,8 +187,8 @@
 
       <!-- 这个是管理人员弹窗 -->
       <el-dialog title="使用人员管理" :visible.sync="staffDialogVisible" width="80%"
-       v-loading="loading"
-          element-loading-text="拼命加载中"
+       v-loading="loadingStaff"
+          element-loading-text="拼命加载使用人员信息中"
           element-loading-spinner="el-icon-loading"
           element-loading-background="rgba(0, 0, 0, 0.8)">
    <div class="multiUpload">
@@ -277,8 +277,8 @@
 <!-- 这是公用终端管理的弹框 -->
 
   <el-dialog title="公用终端管理" :visible.sync="terminalsDialogVisible" width="80%"
-   v-loading="loading"
-          element-loading-text="拼命加载中"
+   v-loading="loadingTerminal"
+          element-loading-text="拼命加载终端信息中"
           element-loading-spinner="el-icon-loading"
           element-loading-background="rgba(0, 0, 0, 0.8)">
     <div class="multiUpload">
@@ -347,10 +347,11 @@
       </el-dialog>
 
       <!-- 这个是端口管理的弹窗 -->
-      <el-dialog title="" :visible.sync="portOnOffDialogVisible" width="65%" center  v-loading="loading"
-          element-loading-text="拼命加载中"
-          element-loading-spinner="el-icon-loading"
-          element-loading-background="rgba(0, 0, 0, 0.8)">
+      <el-dialog title="" :visible.sync="portOnOffDialogVisible" width="65%" center
+       v-loading="portOperating"
+    element-loading-text="正在操作端口中"
+    element-loading-spinner="el-icon-loading"
+    element-loading-background="rgba(0, 0, 0, 0.8)">
         <div class="el_body_dialog">
           <div class="incNumTitle">
             <span id="fontWeightUp">你要对以下终端的端口进行管理</span>
@@ -434,7 +435,7 @@
     :data="logData"
     ref="filterTable"
     style="width: 100%"
-    v-loading="loading">
+    v-loading="loadingLog">
     <el-table-column
       prop="handle_time"
       label="操作时间"
@@ -753,6 +754,8 @@ export default {
   data() {
     return {
       logData: [],
+      loadingLog:true,
+      portOperating:true,
       staffDialogVisible: false,
       // 这是控制一线处理对话框显示与否
       portOnOffDialogVisible: false,
@@ -873,7 +876,9 @@ export default {
       totalSuccessOff: "",
       totalSuccess: "",
       emergencyLists:[],
-      loading: true,
+      loadingData: true,
+      loadingStaff:true,
+      loadingTerminal:true,
       user:"",
       userDepartment:""
     };
@@ -991,19 +996,23 @@ export default {
     },
     // 管理人员事件
     staffManage() {
+              this.staffDialogVisible = true;
+      this.loadingStaff=true;
+      setTimeout(()=>{
+        this.loadingStaff=false;
+      },2000)
       this.$http.get("/ecc/auth/operation").then(res => {
         if (res.data.errcode == 0) {
           this.$http
             .get("/ecc/staff")
             .then(res => {
               // console.log(res);
-              this.loading=false;
+              this.loadingStaff=false;
               let SS = res.data.data;
               this.totalStaffNum = res.data.total;
               let end = this.pageNum * this.pageSize;
               let start = end - this.pageSize;
               this.staffData = SS.slice(start, end);
-              this.staffDialogVisible = true;
             })
             .catch(res => {
               this.$message.error("获取人员信息失败！");
@@ -1195,6 +1204,11 @@ export default {
     },
     // 终端管理
     terminalManage() {
+      this.loadingTerminal=true;
+      this.terminalsDialogVisible = true;
+      setTimeout(()=>{
+        this.loadingTerminal=false;
+      },2000);
       this.$http
         .get("/ecc/auth/system")
         .then(res => {
@@ -1204,13 +1218,12 @@ export default {
             this.$http
               .get("/ecc/device")
               .then(res => {
-                this.loading=false;
+                this.loadingTerminal=false;
                 let terms = res.data.data;
                 this.totalTermsNum = res.data.total;
                 let end = this.pageNum * this.pageSize;
                 let start = end - this.pageSize;
                 this.terminalsData = terms.slice(start, end);
-                this.terminalsDialogVisible = true;
               })
               .catch(res => {
                 this.$message.error("获取终端信息失败！");
@@ -1276,11 +1289,15 @@ export default {
     },
     // 展示定时任务日志
     showLog() {
+      this.logDialogTableVisible = true;
+      this.loadingLog = true;
+      setTimeout(() => {
+          this.loadingLog = false;
+        }, 2000);
     this.$http.get('/ecc/log/download')
     .then(res=>{
       if(res.data.errcode == 0){
-        this.logDialogTableVisible = true;
-        this.loading = false;
+        this.loadingLog = false;
         this.logData = res.data.data
         // console.log(this.logData,'ooo')
         let time = []
@@ -1291,8 +1308,6 @@ export default {
         this.filterTime = time.map(item => {
           return { text:item,value:item}
         })
-        // console.log(this.filterTime,'ppp')
-
       }
       else{
         this.$message.error("操作日志数据获取失败！")
@@ -1401,8 +1416,8 @@ export default {
     },
     // 一键应急开启端口
     confirmOpenAll(){
-      this.confirmVisible=false;
-                    this.OpeningAllVisible = true;
+                this.confirmVisible=false;
+                this.OpeningAllVisible = true;
                   this.$http
                           .get("/ecc/terminal/open/all")
                           .then(res => {
@@ -1499,10 +1514,15 @@ offUploadStaffDialog(){
       this.portOnOffDialogVisible = false;
     },
     loadData() {
+      this.loadingData=true;
+      setTimeout(()=>{
+      this.loadingData=false;
+      },5000)
       this.$http
         .get("/ecc/terminal")
         .then(res => {
-          this.loading = false;
+          if(res.data.errcode == '0'){
+          this.loadingData = false;
           let list1 = res.data.data;
           this.tableData = list1;
           this.totalNum = res.data.total;
@@ -1510,6 +1530,7 @@ offUploadStaffDialog(){
             this.portList.push(this.tableData[i].switch_port);
           }
           this.terminalList = list1;
+          }
         })
         .catch(res => {
           this.$message.error("数据获取失败");
@@ -1531,12 +1552,20 @@ offUploadStaffDialog(){
       },
     // 刷新数据
     refreshData() {
+      this.loadingData=true;
+      setTimeout(()=>{
+      this.loadingData=true;
+      },2000)
       this.disabled = true;
       this.$http.get("/ecc/terminal/real/data").then(res => {
-        this.loading = false;
+        if(res.data.errcode == '0'){
+        this.loadingData = false;
         let list1 = res.data.data;
         this.tableData = list1;
         this.$message.success("数据刷新成功！");
+        }else{
+        this.$message.success("数据刷新失败！");
+        }
       });
       this.aa()
     },
@@ -1565,10 +1594,13 @@ offUploadStaffDialog(){
         type: "warning"
       })
         .then(() => {
-          // console.log(this.timeRange,"kkk")
-if(this.portStatus == "off"){
-  var obj3={
-    status: this.portStatus,
+         this.portOperating=true;
+         setTimeout(()=>{
+         this.portOperating=false;
+         },2000)
+        if(this.portStatus == "off"){
+         var obj3={
+              status: this.portStatus,
               available_time:"",
               switch_ip: this.switch_ip,
               terminal_ip: this.terminal_ip,
@@ -1582,11 +1614,13 @@ if(this.portStatus == "off"){
                 .then(res => {
                   if (res.data.errcode !== "0") {
                     this.$message.error("端口关闭失败！");
+                    this.portOperating=false;
                   } else {
                     this.$message.success("端口关闭成功！");
                     this.portOnOffDialogVisible = false;
+                    this.portOperating=false;
                     this.loadData();
-                    console.log(obj3);
+                    // console.log(obj3);
                   }
                 })
                 .catch(res => {
@@ -1627,12 +1661,14 @@ if(this.portStatus == "off"){
                 .put("/ecc/terminal", obj2)
                 .then(res => {
                   if (res.data.errcode !== "0") {
-                    this.$message.error("端口操作失败！");
+                    this.$message.error("端口开启失败！");
+                    this.portOperating=false;
                   } else {
-                    this.$message.success("端口操作成功！");
+                    this.$message.success("端口开启成功！");
                     this.portOnOffDialogVisible = false;
+                    this.portOperating=false;
                     this.loadData();
-                    console.log(obj2);
+                    // console.log(obj2);
                   }
                 })
                 .catch(res => {
@@ -1643,13 +1679,14 @@ if(this.portStatus == "off"){
                 .put("/ecc/terminal", obj1)
                 .then(res => {
                   if (res.data.errcode !== "0") {
-                    this.loading=false;
-                    this.$message.error("端口操作失败！");
+                    this.$message.error("端口开启失败！");
+                    this.portOperating=false;
                   } else {
-                    this.$message.success("端口操作成功！");
+                    this.$message.success("端口开启成功！");
                     this.portOnOffDialogVisible = false;
+                    this.portOperating=false;
                     this.loadData();
-                    console.log(obj1);
+                    // console.log(obj1);
                   }
                 })
                 .catch(res => {
