@@ -261,8 +261,7 @@
     </el-select>
     </el-form-item>
     <el-form-item label="统一认证号" :label-width="formLabelWidth" prop="united_iden_num">
-      <el-input v-if="staffTitle=='修改使用人员信息'" v-model.trim="EditStaffform.united_iden_num"  :disabled="true"></el-input>
-      <el-input v-else v-model.trim="EditStaffform.united_iden_num" autocomplete="off"></el-input>
+      <el-input v-model.trim="EditStaffform.united_iden_num" autocomplete="off"></el-input>
     </el-form-item>
     <el-form-item label="部门" :label-width="formLabelWidth" prop="department">
       <el-input v-model.trim="EditStaffform.department" placeholder="请输入数据中心XX部" autocomplete="off"></el-input>
@@ -526,6 +525,25 @@
     <el-button v-else type="primary" @click="confirmTermianlEdit" >确定修改</el-button>
   </div>
 </el-dialog>
+<!-- 一键关闭中对话框 -->
+ <el-dialog
+        title="一键式应急终端端口关闭中"
+        :visible.sync="ClosingAllVisible"
+        width="40%"
+        center
+      >
+        <el-card class="box-card">
+          <div slot="header" class="clearfix">
+             <el-row>
+                  <el-col :span="24"
+                    ><div class="grid-content bg-purple-dark">
+                    <span class="center_pos">正在关闭应急终端端口，请等待<span class="loading"></span><span class="loading"></span><span class="loading"></span></span>
+                    </div></el-col
+                  >
+                </el-row>
+          </div>
+        </el-card>
+      </el-dialog>
 <!-- 一键关闭成功对话框 -->
  <el-dialog
         title="一键式应急终端端口关闭提示"
@@ -538,7 +556,6 @@
              <el-row>
                   <el-col :span="24"
                     ><div class="grid-content bg-purple-dark">
-                    <span class="center_pos" v-if="this.hint!=='0'">正在关闭应急终端端口，请等待<span class="loading"></span><span class="loading"></span><span class="loading"></span></span>
                  <span class="center_pos">共关闭成功：</span><span class="center_pos">{{totalSuccessOff}}个</span>
                     </div></el-col
                   >
@@ -668,6 +685,25 @@
       </el-table-column>
     </el-table>
       </el-dialog>
+      <!-- 一键开启中对话框 -->
+       <el-dialog
+        title="一键式应急终端端口开启中"
+        :visible.sync="OpeningAllVisible"
+        width="40%"
+        center
+      >
+        <el-card class="box-card">
+          <div slot="header" class="clearfix">
+             <el-row>
+                  <el-col :span="24"
+                    ><div class="grid-content bg-purple-dark">
+                    <span class="center_pos">正在开启应急终端端口，请等待<span class="loading"></span><span class="loading"></span><span class="loading"></span></span>
+                    </div></el-col
+                  >
+                </el-row>
+          </div>
+        </el-card>
+      </el-dialog>
       <!-- 一键开启成功对话框 -->
       <el-dialog
         title="一键式应急终端端口开启提示"
@@ -680,8 +716,7 @@
              <el-row>
                   <el-col :span="24"
                     ><div class="grid-content bg-purple-dark">
-                    <span class="center_pos" v-if="this.hint!=='0'">正在开启应急终端端口，请等待<span class="loading"></span><span class="loading"></span><span class="loading"></span></span>
-                 <span class="center_pos" v-else>共开启成功：</span><span class="center_pos">{{totalSuccess}}个</span>
+                   <span class="center_pos">共开启成功：</span><span class="center_pos">{{totalSuccess}}个</span>
                     </div></el-col
                   >
                 </el-row>
@@ -726,6 +761,8 @@ export default {
       confirmVisible:false,
       confirmOffVisible:false,
       succeedOffDialogVisible: false,
+      ClosingAllVisible:false,
+      OpeningAllVisible:false,
       multiEmerOnValue: "on",
       multiEmerOffValue: "off",
       portStatus: "",
@@ -824,7 +861,6 @@ export default {
       filterText:[],
       filterValue:[],
       listIncNum: [],
-      hint:"",
       switch_port: "",
       terminal_ip: "",
       location: "",
@@ -1364,15 +1400,16 @@ export default {
     // 一键应急开启端口
     confirmOpenAll(){
       this.confirmVisible=false;
+                    this.OpeningAllVisible = true;
                   this.$http
                           .get("/ecc/terminal/open/all")
                           .then(res => {
-                            this.totalSuccess = res.data.total;
-                            this.hint=res.data.errcode;
                             if (res.data.errcode == "0") {
+                             this.totalSuccess = res.data.total;
+                             this.OpeningAllVisible = false;
                               this.succeedDialogVisible = true;
                             } else {
-                              this.succeedDialogVisible = false;
+                              this.OpeningAllVisible = false;
                               this.$message.error("一键式应急开启失败！");
                             }
                           })
@@ -1408,13 +1445,15 @@ export default {
      // 一键应急关闭端口预览
     confirmCloseAll(){
       this.confirmOffVisible=false;
+      this.ClosingAllVisible=true;
       this.$http.get("/ecc/terminal/close/all")
       .then(res => {
-              this.totalSuccessOff = res.data.total;
-              this.hint=res.data.errcode
               if (res.data.errcode == "0") {
+                 this.totalSuccessOff = res.data.total;
+                this.ClosingAllVisible=false;
                 this.succeedOffDialogVisible = true;
               } else {
+                this.ClosingAllVisible=false;
                 this.$message.error("一键式应急关闭失败！");
               }
             })
