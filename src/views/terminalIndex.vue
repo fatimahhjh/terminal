@@ -116,7 +116,7 @@
                 class="white_font"
                 type="primary"
                 size="mini"
-                @click="portManage(scope.row.terminal_ip,scope.row.location,scope.row.switch_ip,scope.row.switch_name,scope.row.terminal_type,scope.row.switch_port,scope.row.status)"
+                @click="portManage(scope.row)"
                 >端口管理</el-button
               >
             </template>
@@ -230,7 +230,7 @@
           size="mini"
           type="danger"
            class="white_font"
-          @click="deleteStaff(scope.row.united_iden_num,scope.row.department)">删除</el-button>
+          @click="deleteStaff(scope.row.staff_id,scope.row.united_iden_num,scope.row.department)">删除</el-button>
       </template>
     </el-table-column>
   </el-table>
@@ -330,7 +330,7 @@
           size="mini"
           type="danger"
            class="white_font"
-          @click="deleteTerminals(scope.row.terminal_ip)">删除</el-button>
+          @click="deleteTerminals(scope.row.terminal_id,scope.row.terminal_ip)">删除</el-button>
       </template>
     </el-table-column>
   </el-table>
@@ -870,6 +870,7 @@ export default {
       location: "",
       switch_ip: "",
       switch_name: "",
+      terminal_id:"",
       terminal_type: "",
       username: "",
       totalSuccessOff: "",
@@ -1051,7 +1052,7 @@ export default {
       //将每一行的数据赋值给Dialog弹框（这里是重点）
     },
     // 删除人员
-    deleteStaff(indenti_num, department) {
+    deleteStaff(staff_id,indenti_num, department) {
        this.$confirm("此操作将永久删除该人员, 是否继续?", "提示", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
@@ -1059,7 +1060,7 @@ export default {
         })
           .then(() => {
             this.$http
-              .delete("/ecc/staff?united_iden_num=" + indenti_num)
+              .delete("/ecc/staff?staff_id=" + staff_id)
               .then(res => {
                 if (res.data.errcode == "0") {
                   // this.$message.success("人员删除成功！");
@@ -1173,11 +1174,11 @@ export default {
             }
             try {
               this.$http
-                .post("/ecc/staff", this.EditStaffform)
+                .put("/ecc/staff", this.EditStaffform)
                 .then(res => {
                   if (res.data.errcode == "0") {
                     this.$message.success("修改人员成功！");
-                    // console.log(this.EditStaffform)
+                    console.log(this.EditStaffform)
                     this.editStaffDialog = false;
                     this.staffDialogVisible=false;
                     this.staffManage();
@@ -1215,7 +1216,7 @@ export default {
             this.$message.warning("对不起，您没有此权限！");
           } else {
             this.$http
-              .get("/ecc/device")
+              .get("/ecc/terminal")
               .then(res => {
                 this.loadingTerminal=false;
                 let terms = res.data.data;
@@ -1339,7 +1340,7 @@ export default {
      this.terminalsDialogVisible=false;
     },
     // 删除终端
-    deleteTerminals(terminal_ip) {
+    deleteTerminals(terminal_id,terminal_ip) {
       this.$confirm("此操作将永久删除该终端, 是否继续?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
@@ -1347,7 +1348,7 @@ export default {
       })
         .then(() => {
           this.$http
-            .delete("/ecc/device?terminal_ip=" + terminal_ip)
+            .delete("/ecc/device?terminal_id=" + terminal_id)
             .then(res => {
               if (res.data.errcode == "0") {
                 this.$message.success("终端删除成功！");
@@ -1593,12 +1594,9 @@ offUploadStaffDialog(){
         type: "warning"
       })
         .then(() => {
-         this.portOperating=true;
-         setTimeout(()=>{
-         this.portOperating=false;
-         },2000)
         if(this.portStatus == "off"){
          var obj3={
+              terminal_id:this.terminal_id,
               status: this.portStatus,
               available_time:"",
               switch_ip: this.switch_ip,
@@ -1608,6 +1606,10 @@ offUploadStaffDialog(){
               switch_port: this.switch_port,
               terminal_type: this.terminal_type
   }
+        this.portOperating=true;
+         setTimeout(()=>{
+         this.portOperating=false;
+         },2000);
    this.$http
                 .put("/ecc/terminal", obj3)
                 .then(res => {
@@ -1636,6 +1638,7 @@ offUploadStaffDialog(){
           }
            else {
             var obj1 = {
+              terminal_id:this.terminal_id,
               status: this.portStatus,
               available_time: this.pickTime,
               switch_ip: this.switch_ip,
@@ -1646,6 +1649,7 @@ offUploadStaffDialog(){
               terminal_type: this.terminal_type
             };
             var obj2 = {
+              terminal_id:this.terminal_id,
               status: this.portStatus,
               available_time: this.timeRange,
               switch_ip: this.switch_ip,
@@ -1656,6 +1660,10 @@ offUploadStaffDialog(){
               terminal_type: this.terminal_type
             };
             if (this.pickTime == "选择时间段") {
+                    this.portOperating=true;
+         setTimeout(()=>{
+         this.portOperating=false;
+         },2000)
               this.$http
                 .put("/ecc/terminal", obj2)
                 .then(res => {
@@ -1674,6 +1682,10 @@ offUploadStaffDialog(){
                   this.$message.error("访问失败！");
                 });
             } else {
+                    this.portOperating=true;
+         setTimeout(()=>{
+         this.portOperating=false;
+         },2000)
               this.$http
                 .put("/ecc/terminal", obj1)
                 .then(res => {
@@ -1703,28 +1715,23 @@ offUploadStaffDialog(){
         });
     },
     // 端口开启关闭弹框
-    portManage(
-      terminal_ip,
-      location,
-      terminal_type,
-      switch_name,
-      switch_ip,
-      switch_port,
-      status
-    ) {
+    portManage(row) {
+      console.log(row);
       this.timeRange = "";
       this.$http.get("/ecc/auth/manager").then(res => {
         if (res.data.errcode !== "0") {
           this.$message.warning("对不起，您没有此权限！");
         } else {
           this.portOnOffDialogVisible = true;
-          this.switch_port = switch_port;
-          this.portStatus = status;
-          this.terminal_ip = terminal_ip;
-          this.location = location;
-          this.terminal_type = switch_ip;
-          this.switch_name = switch_name;
-          this.switch_ip = terminal_type;
+          this.switch_port = row.switch_port;
+          this.portStatus = row.status;
+          this.terminal_ip = row.terminal_ip;
+          this.location = row.location;
+          this.terminal_type = row.switch_ip;
+          this.switch_name = row.switch_name;
+          this.switch_ip = row.terminal_type;
+          this.terminal_id = row.terminal_id;
+          // console.log(this.terminal_id +"sss")
         }
       });
     }
