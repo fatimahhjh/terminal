@@ -60,12 +60,11 @@
     <!-- 加载终端所有信息 -->
         <el-table
           :data="terminalsTableList"
-          tooltip-effect="dark"
           style="width:100%"
           v-loading="loadingData"
           element-loading-text="拼命加载中"
           element-loading-spinner="el-icon-loading"
-          element-loading-background="rgba(0, 0, 0, 0.8)"
+          element-loading-background="rgba(0, 0, 0, 0.5)"
         >
           <el-table-column type="index" label="序号"> </el-table-column>
           <el-table-column prop="terminal_type" label="终端类型">

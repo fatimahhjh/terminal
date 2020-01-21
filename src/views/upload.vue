@@ -45,7 +45,7 @@ export default {
   },
   methods: {
     uploadSuccess(response) {
-      let { errcode } = response;
+      let { errcode, errmsg } = response;
       if (errcode == "0") {
         this.uploadbeha = true;
         this.$message({
@@ -63,7 +63,11 @@ export default {
         }
         //  文件上传成功
       } else {
-        this.$message.error("数据库插入错误");
+        this.$message.error({
+          showClose: true,
+          duration: 0,
+          message: errmsg
+        });
       }
     },
     submitUpload() {
