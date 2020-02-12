@@ -45,6 +45,7 @@
                 placement="left-start"
               >
                 <el-button
+                  type="primary"
                   class="refresh"
                   :disabled="disabled"
                   @click="refreshData"
@@ -66,7 +67,7 @@
           :data="terminalsTableList"
           style="width:100%"
           v-loading="loadingData"
-          element-loading-text="拼命加载中"
+          :element-loading-text="view_loading_text"
           element-loading-spinner="el-icon-loading"
           element-loading-background="rgba(0, 0, 0, 0.5)"
         >
@@ -117,7 +118,6 @@
           <el-table-column fixed="right" label="管理状态">
             <template slot-scope="scope">
               <el-button
-                class="white_font"
                 type="primary"
                 size="mini"
                 @click="portManage(scope.row)"
@@ -151,7 +151,6 @@
               <el-button
                 type="primary"
                 size="mini"
-                class="white_font"
                 @click="downloadTerminal"
                 >下载批量上传模板</el-button
               >
@@ -173,7 +172,6 @@
           <el-button
             size="mini"
             type="info"
-            class="white_font"
             @click="offUploadTermDialog"
             >关闭弹框</el-button
           >
@@ -193,7 +191,6 @@
               <el-button
                 type="primary"
                 size="mini"
-                class="white_font"
                 @click="downloadStaff"
                 >下载批量上传模板</el-button
               >
@@ -217,7 +214,6 @@
         <span slot="footer" class="dialog-footer">
           <el-button
             type="info"
-            class="white_font"
             size="mini"
             @click="offUploadStaffDialog"
             >关闭弹框</el-button
@@ -239,7 +235,6 @@
           <el-button
             type="warning"
             size="mini"
-            class="white_font"
             @click="showUploadStaffDialog"
             >批量上传新增人员</el-button
           >
@@ -249,7 +244,6 @@
             type="success"
             size="mini"
             @click="addStaff"
-            class="white_font"
             >单条新增使用人员</el-button
           >
         </div>
@@ -264,14 +258,12 @@
               <el-button
                 type="info"
                 size="mini"
-                class="white_font"
                 @click="editStaff(scope.$index, scope.row)"
                 >编辑</el-button
               >
               <el-button
                 size="mini"
                 type="danger"
-                class="white_font"
                 @click="
                   deleteStaff(
                     scope.row.staff_id,
@@ -348,14 +340,15 @@
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
-          <el-button @click="editStaffCancle">取 消</el-button>
+          <el-button size="mini" @click="editStaffCancle">取 消</el-button>
           <el-button
             v-if="staffTitle == '新增使用人员'"
             type="primary"
+            size="mini"
             @click="confirmStaffAdd"
             >确定新增</el-button
           >
-          <el-button v-else type="primary" @click="confirmStaffEdit"
+          <el-button v-else type="primary" @click="confirmStaffEdit" size="mini"
             >确定修改</el-button
           >
         </div>
@@ -375,7 +368,6 @@
           <el-button
             type="warning"
             size="mini"
-            class="white_font"
             @click="showUploadTermDialog"
             >批量上传新增终端</el-button
           >
@@ -385,7 +377,6 @@
             type="success"
             size="mini"
             @click="addTerms"
-            class="white_font"
             >单条新增终端</el-button
           >
         </div>
@@ -411,14 +402,12 @@
               <el-button
                 size="mini"
                 type="info"
-                class="white_font"
                 @click="editTerminals(scope.$index, scope.row)"
                 >编辑</el-button
               >
               <el-button
                 size="mini"
                 type="danger"
-                class="white_font"
                 @click="
                   deleteTerminals(scope.row.terminal_id, scope.row.terminal_ip)
                 "
@@ -753,38 +742,18 @@
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
-          <el-button @click="editStaffCancle">取 消</el-button>
+          <el-button size="mini" @click="editStaffCancle">取 消</el-button>
           <el-button
             v-if="termstitle == '新增终端'"
             @click="confirmTermianlAdd"
+            size="mini"
             type="primary"
             >确定新增</el-button
           >
-          <el-button v-else type="primary" @click="confirmTermianlEdit"
+          <el-button v-else type="primary" @click="confirmTermianlEdit" size="mini"
             >确定修改</el-button
           >
         </div>
-      </el-dialog>
-      <!-- 一键关闭中对话框 -->
-      <el-dialog
-        title="一键式应急终端端口关闭中"
-        :visible.sync="ClosingAllVisible"
-        width="40%"
-        center
-      >
-        <el-card class="box-card">
-          <div slot="header" class="clearfix">
-            <el-row>
-              <el-col :span="24"
-                ><div class="grid-content bg-purple-dark">
-                  <span class="center_pos"
-                    >正在关闭应急终端端口，请等待<span class="loading"></span
-                    ><span class="loading"></span><span class="loading"></span
-                  ></span></div
-              ></el-col>
-            </el-row>
-          </div>
-        </el-card>
       </el-dialog>
       <!-- 一键关闭成功对话框 -->
       <el-dialog
@@ -793,92 +762,66 @@
         width="80%"
         center
       >
-            <el-row>
-              <el-col :span="24"
-                ><div class="grid-content bg-purple-dark">
-                  <span class="center_pos">共关闭成功：</span
-                  ><span class="center_pos">{{ totalSuccess }}个</span>
-                </div></el-col
-              >
-            </el-row>
-  <el-collapse v-model="showCloseSuccess" accordion>
-  <el-collapse-item title="关闭成功端口列表：" name="showCloseSuccess">
-     <el-table
-    :data="closeALLsuccData"
-    style="width: 100%"
-    :row-class-name="tableSuccRow">
-    <el-table-column
-      prop="location"
-      label="物理位置"
-      width="180">
-    </el-table-column>
-    <el-table-column
-      prop="terminal_ip"
-      label="终端IP"
-      width="180">
-    </el-table-column>
-    <el-table-column
-      prop="switch_ip"
-      label="交换机IP">
-    </el-table-column>
-     <el-table-column
-      prop="switch_name"
-      label="交换机设备名称">
-    </el-table-column>
-     <el-table-column
-      prop="switch_port"
-      label="交换机设备接入端口">
-    </el-table-column>
-     <el-table-column
-      prop="status"
-      label="运行状态">
-    </el-table-column>
-  </el-table>
-  </el-collapse-item>
-</el-collapse>
-   <el-row>
-              <el-col :span="24"
-                ><div class="grid-content bg-purple-dark">
-                  <span class="center_pos">共关闭失败：</span
-                  ><span class="center_pos">{{ fail_total }}个</span>
-                </div></el-col
-              >
-            </el-row>
-  <el-collapse v-model="showCloseSuccess" accordion>
-  <el-collapse-item title="关闭失败端口列表：">
-     <el-table
-    :data="closeALLFailedData"
-    style="width: 100%"
-    :row-class-name="tableFailRow">
-    <el-table-column
-      prop="location"
-      label="物理位置"
-      width="180">
-    </el-table-column>
-    <el-table-column
-      prop="terminal_ip"
-      label="终端IP"
-      width="180">
-    </el-table-column>
-    <el-table-column
-      prop="switch_ip"
-      label="交换机IP">
-    </el-table-column>
-     <el-table-column
-      prop="switch_name"
-      label="交换机设备名称">
-    </el-table-column>
-     <el-table-column
-      prop="switch_port"
-      label="交换机设备接入端口">
-    </el-table-column>
-     <el-table-column
-      prop="status"
-      label="运行状态">
-    </el-table-column>
-  </el-table>
-  </el-collapse-item>
-</el-collapse>
+        <el-row>
+          <el-col :span="24"
+            ><div class="grid-content bg-purple-dark">
+              <span class="center_pos">共关闭成功：</span
+              ><span class="center_pos">{{ totalSuccess }}个</span>
+            </div></el-col
+          >
+        </el-row>
+        <el-collapse v-model="showCloseSuccess" accordion>
+          <el-collapse-item title="关闭成功端口列表：" name="showCloseSuccess">
+            <el-table
+              :data="closeALLsuccData"
+              style="width: 100%"
+              :row-class-name="tableSuccRow"
+            >
+              <el-table-column prop="location" label="物理位置" width="180">
+              </el-table-column>
+              <el-table-column prop="terminal_ip" label="终端IP" width="180">
+              </el-table-column>
+              <el-table-column prop="switch_ip" label="交换机IP">
+              </el-table-column>
+              <el-table-column prop="switch_name" label="交换机设备名称">
+              </el-table-column>
+              <el-table-column prop="switch_port" label="交换机设备接入端口">
+              </el-table-column>
+              <el-table-column prop="status" label="运行状态">
+              </el-table-column>
+            </el-table>
+          </el-collapse-item>
+        </el-collapse>
+        <el-row>
+          <el-col :span="24"
+            ><div class="grid-content bg-purple-dark">
+              <span class="center_pos">共关闭失败：</span
+              ><span class="center_pos">{{ fail_total }}个</span>
+            </div></el-col
+          >
+        </el-row>
+        <el-collapse v-model="showCloseSuccess" accordion>
+          <el-collapse-item title="关闭失败端口列表：">
+            <el-table
+              :data="closeALLFailedData"
+              style="width: 100%"
+              :row-class-name="tableFailRow"
+            >
+              <el-table-column prop="location" label="物理位置" width="180">
+              </el-table-column>
+              <el-table-column prop="terminal_ip" label="终端IP" width="180">
+              </el-table-column>
+              <el-table-column prop="switch_ip" label="交换机IP">
+              </el-table-column>
+              <el-table-column prop="switch_name" label="交换机设备名称">
+              </el-table-column>
+              <el-table-column prop="switch_port" label="交换机设备接入端口">
+              </el-table-column>
+              <el-table-column prop="status" label="运行状态">
+              </el-table-column>
+            </el-table>
+          </el-collapse-item>
+        </el-collapse>
         <span slot="footer" class="dialog-footer">
           <el-button
             type="primary"
@@ -901,7 +844,8 @@
           <el-button type="info" @click="confirmOffVisible = false" size="mini"
             >取消一键关闭</el-button
           >
-          <el-button type="primary" @click="confirmCloseAll" size="mini"
+          <el-button type="primary" @click="confirmCloseAll" size="mini" v-loading.fullscreen.lock="fullscreenLoading"
+            element-loading-text="一键应急端口关闭执行中，请稍后..."
             >确认一键关闭</el-button
           >
         </span>
@@ -931,7 +875,12 @@
           <el-button type="info" @click="confirmVisible = false" size="mini"
             >取消一键开启</el-button
           >
-          <el-button type="primary" @click="confirmOpenAll" size="mini"
+          <el-button
+            type="primary"
+            @click="confirmOpenAll"
+            size="mini"
+            v-loading.fullscreen.lock="fullscreenLoading"
+            element-loading-text="一键应急端口开启执行中，请稍后..."
             >确认一键开启</el-button
           >
         </span>
@@ -950,27 +899,6 @@
           <el-table-column prop="status" label="状态"> </el-table-column>
         </el-table>
       </el-dialog>
-      <!-- 一键开启中对话框 -->
-      <el-dialog
-        title="一键式应急终端端口开启中"
-        :visible.sync="OpeningAllVisible"
-        width="40%"
-        center
-      >
-        <el-card class="box-card">
-          <div slot="header" class="clearfix">
-            <el-row>
-              <el-col :span="24"
-                ><div class="grid-content bg-purple-dark">
-                  <span class="center_pos"
-                    >正在开启应急终端端口，请等待<span class="loading"></span
-                    ><span class="loading"></span><span class="loading"></span
-                  ></span></div
-              ></el-col>
-            </el-row>
-          </div>
-        </el-card>
-      </el-dialog>
       <!-- 一键开启成功对话框 -->
       <el-dialog
         title="一键式应急终端端口开启提示"
@@ -978,92 +906,66 @@
         width="80%"
         center
       >
-            <el-row>
-              <el-col :span="24"
-                ><div class="grid-content bg-purple-dark">
-                  <span class="center_pos">共开启成功：</span
-                  ><span class="center_pos">{{ totalSuccess }}个</span>
-                </div></el-col
-              >
-            </el-row>
-         <el-collapse v-model="showOpenSuccess" accordion>
-  <el-collapse-item title="开启成功端口列表：" name="showOpenSuccess">
-     <el-table
-    :data="openALLSuccData"
-    style="width: 100%"
-    :row-class-name="tableSuccRow">
-    <el-table-column
-      prop="location"
-      label="物理位置"
-      width="180">
-    </el-table-column>
-    <el-table-column
-      prop="terminal_ip"
-      label="终端IP"
-      width="180">
-    </el-table-column>
-    <el-table-column
-      prop="switch_ip"
-      label="交换机IP">
-    </el-table-column>
-     <el-table-column
-      prop="switch_name"
-      label="交换机设备名称">
-    </el-table-column>
-     <el-table-column
-      prop="switch_port"
-      label="交换机设备接入端口">
-    </el-table-column>
-     <el-table-column
-      prop="status"
-      label="运行状态">
-    </el-table-column>
-  </el-table>
-  </el-collapse-item>
-</el-collapse>
-   <el-row>
-              <el-col :span="24"
-                ><div class="grid-content bg-purple-dark">
-                  <span class="center_pos">共开启失败：</span
-                  ><span class="center_pos">{{ fail_total }}个</span>
-                </div></el-col
-              >
-            </el-row>
-  <el-collapse v-model="showOpenSuccess" accordion>
-  <el-collapse-item title="开启失败端口列表：">
-     <el-table
-    :data="openALLFailedData"
-    style="width: 100%"
-    :row-class-name="tableFailRow">
-    <el-table-column
-      prop="location"
-      label="物理位置"
-      width="180">
-    </el-table-column>
-    <el-table-column
-      prop="terminal_ip"
-      label="终端IP"
-      width="180">
-    </el-table-column>
-    <el-table-column
-      prop="switch_ip"
-      label="交换机IP">
-    </el-table-column>
-     <el-table-column
-      prop="switch_name"
-      label="交换机设备名称">
-    </el-table-column>
-     <el-table-column
-      prop="switch_port"
-      label="交换机设备接入端口">
-    </el-table-column>
-     <el-table-column
-      prop="status"
-      label="运行状态">
-    </el-table-column>
-  </el-table>
-  </el-collapse-item>
-</el-collapse>
+        <el-row>
+          <el-col :span="24"
+            ><div class="grid-content bg-purple-dark">
+              <span class="center_pos">共开启成功：</span
+              ><span class="center_pos">{{ totalSuccess }}个</span>
+            </div></el-col
+          >
+        </el-row>
+        <el-collapse v-model="showOpenSuccess" accordion>
+          <el-collapse-item title="开启成功端口列表：" name="showOpenSuccess">
+            <el-table
+              :data="openALLSuccData"
+              style="width: 100%"
+              :row-class-name="tableSuccRow"
+            >
+              <el-table-column prop="location" label="物理位置" width="180">
+              </el-table-column>
+              <el-table-column prop="terminal_ip" label="终端IP" width="180">
+              </el-table-column>
+              <el-table-column prop="switch_ip" label="交换机IP">
+              </el-table-column>
+              <el-table-column prop="switch_name" label="交换机设备名称">
+              </el-table-column>
+              <el-table-column prop="switch_port" label="交换机设备接入端口">
+              </el-table-column>
+              <el-table-column prop="status" label="运行状态">
+              </el-table-column>
+            </el-table>
+          </el-collapse-item>
+        </el-collapse>
+        <el-row>
+          <el-col :span="24"
+            ><div class="grid-content bg-purple-dark">
+              <span class="center_pos">共开启失败：</span
+              ><span class="center_pos">{{ fail_total }}个</span>
+            </div></el-col
+          >
+        </el-row>
+        <el-collapse v-model="showOpenSuccess" accordion>
+          <el-collapse-item title="开启失败端口列表：">
+            <el-table
+              :data="openALLFailedData"
+              style="width: 100%"
+              :row-class-name="tableFailRow"
+            >
+              <el-table-column prop="location" label="物理位置" width="180">
+              </el-table-column>
+              <el-table-column prop="terminal_ip" label="终端IP" width="180">
+              </el-table-column>
+              <el-table-column prop="switch_ip" label="交换机IP">
+              </el-table-column>
+              <el-table-column prop="switch_name" label="交换机设备名称">
+              </el-table-column>
+              <el-table-column prop="switch_port" label="交换机设备接入端口">
+              </el-table-column>
+              <el-table-column prop="status" label="运行状态">
+              </el-table-column>
+            </el-table>
+          </el-collapse-item>
+        </el-collapse>
         <span slot="footer" class="dialog-footer">
           <el-button
             type="primary"
@@ -1095,10 +997,11 @@ export default {
     return {
       logData: [],
       loadingLog: true,
+      fullscreenLoading: false,
       portOperating: true,
       staffDialogVisible: false,
-       showOpenSuccess: ['showOpenSuccess'],
-       showCloseSuccess: ['showCloseSuccess'],
+      showOpenSuccess: ["showOpenSuccess"],
+      showCloseSuccess: ["showCloseSuccess"],
       // 这是控制一线处理对话框显示与否
       portOnOffDialogVisible: false,
       emergencyOnDialogVisible: false,
@@ -1107,8 +1010,6 @@ export default {
       confirmVisible: false,
       confirmOffVisible: false,
       succeedOffDialogVisible: false,
-      ClosingAllVisible: false,
-      OpeningAllVisible: false,
       multiEmerOnValue: "on",
       multiEmerOffValue: "off",
       portStatus: "",
@@ -1117,10 +1018,10 @@ export default {
       pickTime: "",
       timeRange: "",
       tableData: [],
-      closeALLsuccData:[],
-      openALLSuccData:[],
-      closeALLFailedData:[],
-      openALLFailedData:[],
+      closeALLsuccData: [],
+      openALLSuccData: [],
+      closeALLFailedData: [],
+      openALLFailedData: [],
       confirmData: [],
       newTime: "",
       portList: [],
@@ -1134,6 +1035,7 @@ export default {
       terminalList: [],
       termstitle: "",
       staffTitle: "",
+      view_loading_text: "",
       switchIpOptions: [
         {
           value: "76.7.115.156",
@@ -1347,7 +1249,7 @@ export default {
       this.loadingStaff = true;
       setTimeout(() => {
         this.loadingStaff = false;
-      }, 2000);
+      }, 200000);
       this.$http.get("/ecc/auth/operation").then(res => {
         if (res.data.errcode == 0) {
           this.$http
@@ -1498,12 +1400,12 @@ export default {
           });
         });
     },
-     tableSuccRow() {
-          return 'success-row';
-          },
-     tableFailRow() {
-          return 'error-row';
-          },
+    tableSuccRow() {
+      return "success-row";
+    },
+    tableFailRow() {
+      return "error-row";
+    },
     // 取消修改人员
     editStaffCancle() {
       this.editStaffDialog = false;
@@ -1559,7 +1461,7 @@ export default {
       this.terminalsDialogVisible = true;
       setTimeout(() => {
         this.loadingTerminal = false;
-      }, 2000);
+      }, 200000);
       this.$http
         .get("/ecc/auth/system")
         .then(res => {
@@ -1644,7 +1546,7 @@ export default {
       this.loadingLog = true;
       setTimeout(() => {
         this.loadingLog = false;
-      }, 2000);
+      }, 200000);
       this.$http
         .get("/ecc/log/download")
         .then(res => {
@@ -1768,8 +1670,11 @@ export default {
     },
     // 一键应急开启端口
     confirmOpenAll() {
+      this.fullscreenLoading = true;
+      setTimeout(() => {
+        this.fullscreenLoading = false;
+      }, 200000);
       this.confirmVisible = false;
-      this.OpeningAllVisible = true;
       this.$http
         .get("/ecc/terminal/open/all")
         .then(res => {
@@ -1778,10 +1683,10 @@ export default {
             this.fail_total = res.data.fail_total;
             this.openALLSuccData = res.data.success_list;
             this.openALLFailedData = res.data.fail_list;
-            this.OpeningAllVisible = false;
+            this.fullscreenLoading = false;
             this.succeedDialogVisible = true;
           } else {
-            this.OpeningAllVisible = false;
+            this.fullscreenLoading = false;
             this.$message.error("一键式应急开启失败！" + res.data.errmsg);
           }
         })
@@ -1815,8 +1720,11 @@ export default {
     },
     // 一键应急关闭端口预览
     confirmCloseAll() {
-      this.confirmOffVisible = false;
-      this.ClosingAllVisible = true;
+      this.confirmOffVisible=false;
+       this.fullscreenLoading = true;
+      setTimeout(() => {
+        this.fullscreenLoading = false;
+      }, 200000);
       this.$http
         .get("/ecc/terminal/close/all")
         .then(res => {
@@ -1825,10 +1733,10 @@ export default {
             this.fail_total = res.data.fail_total;
             this.closeALLsuccData = res.data.success_list;
             this.closeALLFailedData = res.data.fail_list;
-            this.ClosingAllVisible = false;
+            this.fullscreenLoading = false;
             this.succeedOffDialogVisible = true;
           } else {
-            this.ClosingAllVisible = false;
+            this.fullscreenLoading = false;
             this.$message.error("一键式应急关闭失败！" + res.data.errmsg);
           }
         })
@@ -1871,10 +1779,11 @@ export default {
       this.portOnOffDialogVisible = false;
     },
     loadData() {
+      this.view_loading_text = "数据加载中";
       this.loadingData = true;
       setTimeout(() => {
         this.loadingData = false;
-      }, 5000);
+      }, 10000);
       this.$http
         .get("/ecc/terminal")
         .then(res => {
@@ -1909,10 +1818,8 @@ export default {
     },
     // 刷新数据
     refreshData() {
+      this.view_loading_text = "数据正在刷新";
       this.loadingData = true;
-      setTimeout(() => {
-        this.loadingData = true;
-      }, 2000);
       this.disabled = true;
       this.$http.get("/ecc/terminal/real/data").then(res => {
         if (res.data.errcode == "0") {
@@ -1921,9 +1828,12 @@ export default {
           this.tableData = list1;
           this.$message.success("数据刷新成功！");
         } else {
-          this.$message.success("数据刷新失败！" + res.data.errmsg);
+          this.$message.error("数据刷新失败！" + res.data.errmsg);
         }
       });
+      setTimeout(() => {
+        this.loadingData = false;
+      }, 200000);
       this.aa();
     },
     aa() {
@@ -1964,9 +1874,6 @@ export default {
               terminal_type: this.terminal_type
             };
             this.portOperating = true;
-            setTimeout(() => {
-              this.portOperating = false;
-            }, 2000);
             this.$http
               .put("/ecc/terminal", obj3)
               .then(res => {
@@ -2017,9 +1924,6 @@ export default {
               };
               if (this.pickTime == "选择时间段") {
                 this.portOperating = true;
-                setTimeout(() => {
-                  this.portOperating = false;
-                }, 2000);
                 this.$http
                   .put("/ecc/terminal", obj2)
                   .then(res => {
@@ -2039,9 +1943,6 @@ export default {
                   });
               } else {
                 this.portOperating = true;
-                setTimeout(() => {
-                  this.portOperating = false;
-                }, 2000);
                 this.$http
                   .put("/ecc/terminal", obj1)
                   .then(res => {
@@ -2069,6 +1970,9 @@ export default {
             message: "取消对端口进行此操作"
           });
         });
+         setTimeout(() => {
+              this.portOperating = false;
+            }, 200000);
     },
     // 端口开启关闭弹框
     portManage(row) {
@@ -2087,7 +1991,6 @@ export default {
           this.switch_name = row.switch_name;
           this.switch_ip = row.switch_ip;
           this.terminal_id = row.terminal_id;
-          // console.log(this.terminal_id +"sss")
         }
       });
     }
@@ -2120,12 +2023,7 @@ export default {
         width: 100%;
         height: 71px;
         .refresh {
-          background-color: #409eff;
-          //   position: relative;
-          //   top: -29px;
-          //   margin-right:-528px;
-          //  height: 36px;
-          // right: -306px;
+        height: 35px;
         }
         .oprations_btns {
           cursor: pointer; //鼠标变小手
@@ -2163,10 +2061,6 @@ export default {
           }
         }
       }
-    }
-    /deep/.white_font span {
-      color: white;
-      font-size: 12px;
     }
     .el-card__body {
       padding: 10px 10px 3px 10px;
@@ -2225,12 +2119,12 @@ export default {
   //   position: relative;
   // }
   .addBtns {
-    text-align: right;
-    margin-right: 61px;
-    color: white;
+    width: 23%;
+    margin-top: -27px;
+    float: right;
   }
   .multiUpload {
-    float: left;
+    margin-left: 50%;
   }
   .nav_right {
     width: 600px;
@@ -2298,19 +2192,19 @@ export default {
     }
   }
   .el-table .error-row {
-    background:rgb(250, 235, 208);
+    background: rgb(250, 235, 208);
   }
 
   .el-table .success-row {
     background: #d0f1bf;
   }
-  
-    .center_pos {
-      position: relative;
-      top: 20px;
-      margin-left: 18px;
-    }
-  
+
+  .center_pos {
+    position: relative;
+    top: 20px;
+    margin-left: 18px;
+  }
+
   .float_right {
     float: right;
   }
@@ -2344,8 +2238,13 @@ export default {
   float: left;
 }
 .middlePlace {
-  float: right;
+    display: block;
+    width: 25%;
+    margin: 0 auto;
 }
+.el-button--primary{
+    color: #fff;
+  }
 .failedDialogclose {
   color: #e4e7ed;
 }
