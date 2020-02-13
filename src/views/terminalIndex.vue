@@ -148,10 +148,7 @@
         <el-collapse v-model="activeNames" @change="handleChange">
           <el-collapse-item title="下载批量上传终端信息模板" name="1">
             <div class="float_right">
-              <el-button
-                type="primary"
-                size="mini"
-                @click="downloadTerminal"
+              <el-button type="primary" size="mini" @click="downloadTerminal"
                 >下载批量上传模板</el-button
               >
             </div>
@@ -169,10 +166,7 @@
           </el-collapse-item>
         </el-collapse>
         <span slot="footer" class="dialog-footer">
-          <el-button
-            size="mini"
-            type="info"
-            @click="offUploadTermDialog"
+          <el-button size="mini" type="info" @click="offUploadTermDialog"
             >关闭弹框</el-button
           >
         </span>
@@ -188,10 +182,7 @@
         <el-collapse v-model="activeNames" @change="handleChange">
           <el-collapse-item title="下载批量上传人员信息模板" name="1">
             <div class="float_right">
-              <el-button
-                type="primary"
-                size="mini"
-                @click="downloadStaff"
+              <el-button type="primary" size="mini" @click="downloadStaff"
                 >下载批量上传模板</el-button
               >
             </div>
@@ -212,10 +203,7 @@
           <!-- <el-button type="success" size="mini" icon="el-icon-document-checked">选择的文件</el-button> -->
         </span>
         <span slot="footer" class="dialog-footer">
-          <el-button
-            type="info"
-            size="mini"
-            @click="offUploadStaffDialog"
+          <el-button type="info" size="mini" @click="offUploadStaffDialog"
             >关闭弹框</el-button
           >
         </span>
@@ -232,18 +220,12 @@
         element-loading-background="rgba(0, 0, 0, 0.8)"
       >
         <div class="multiUpload">
-          <el-button
-            type="warning"
-            size="mini"
-            @click="showUploadStaffDialog"
+          <el-button type="warning" size="mini" @click="showUploadStaffDialog"
             >批量上传新增人员</el-button
           >
         </div>
         <div class="addBtns">
-          <el-button
-            type="success"
-            size="mini"
-            @click="addStaff"
+          <el-button type="success" size="mini" @click="addStaff"
             >单条新增使用人员</el-button
           >
         </div>
@@ -365,18 +347,12 @@
         element-loading-background="rgba(0, 0, 0, 0.8)"
       >
         <div class="multiUpload">
-          <el-button
-            type="warning"
-            size="mini"
-            @click="showUploadTermDialog"
+          <el-button type="warning" size="mini" @click="showUploadTermDialog"
             >批量上传新增终端</el-button
           >
         </div>
         <div class="addBtns">
-          <el-button
-            type="success"
-            size="mini"
-            @click="addTerms"
+          <el-button type="success" size="mini" @click="addTerms"
             >单条新增终端</el-button
           >
         </div>
@@ -434,10 +410,8 @@
         :visible.sync="portOnOffDialogVisible"
         width="65%"
         center
-        v-loading="portOperating"
-        element-loading-text="正在操作端口中"
-        element-loading-spinner="el-icon-loading"
-        element-loading-background="rgba(0, 0, 0, 0.8)"
+        v-loading.fullscreen.lock="operateLoading"
+        element-loading-text="正在操作端口中，请稍后"
       >
         <div class="el_body_dialog">
           <div class="incNumTitle">
@@ -750,7 +724,11 @@
             type="primary"
             >确定新增</el-button
           >
-          <el-button v-else type="primary" @click="confirmTermianlEdit" size="mini"
+          <el-button
+            v-else
+            type="primary"
+            @click="confirmTermianlEdit"
+            size="mini"
             >确定修改</el-button
           >
         </div>
@@ -844,7 +822,11 @@
           <el-button type="info" @click="confirmOffVisible = false" size="mini"
             >取消一键关闭</el-button
           >
-          <el-button type="primary" @click="confirmCloseAll" size="mini" v-loading.fullscreen.lock="fullscreenLoading"
+          <el-button
+            type="primary"
+            @click="confirmCloseAll"
+            size="mini"
+            v-loading.fullscreen.lock="fullscreenLoadingOff"
             element-loading-text="一键应急端口关闭执行中，请稍后..."
             >确认一键关闭</el-button
           >
@@ -998,7 +980,8 @@ export default {
       logData: [],
       loadingLog: true,
       fullscreenLoading: false,
-      portOperating: true,
+      fullscreenLoadingOff:false,
+      operateLoading: false,
       staffDialogVisible: false,
       showOpenSuccess: ["showOpenSuccess"],
       showCloseSuccess: ["showCloseSuccess"],
@@ -1247,9 +1230,6 @@ export default {
     staffManage() {
       this.staffDialogVisible = true;
       this.loadingStaff = true;
-      setTimeout(() => {
-        this.loadingStaff = false;
-      }, 200000);
       this.$http.get("/ecc/auth/operation").then(res => {
         if (res.data.errcode == 0) {
           this.$http
@@ -1459,9 +1439,6 @@ export default {
     terminalManage() {
       this.loadingTerminal = true;
       this.terminalsDialogVisible = true;
-      setTimeout(() => {
-        this.loadingTerminal = false;
-      }, 200000);
       this.$http
         .get("/ecc/auth/system")
         .then(res => {
@@ -1544,9 +1521,6 @@ export default {
     showLog() {
       this.logDialogTableVisible = true;
       this.loadingLog = true;
-      setTimeout(() => {
-        this.loadingLog = false;
-      }, 200000);
       this.$http
         .get("/ecc/log/download")
         .then(res => {
@@ -1671,9 +1645,6 @@ export default {
     // 一键应急开启端口
     confirmOpenAll() {
       this.fullscreenLoading = true;
-      setTimeout(() => {
-        this.fullscreenLoading = false;
-      }, 200000);
       this.confirmVisible = false;
       this.$http
         .get("/ecc/terminal/open/all")
@@ -1720,11 +1691,8 @@ export default {
     },
     // 一键应急关闭端口预览
     confirmCloseAll() {
-      this.confirmOffVisible=false;
-       this.fullscreenLoading = true;
-      setTimeout(() => {
-        this.fullscreenLoading = false;
-      }, 200000);
+      this.confirmOffVisible = false;
+      this.fullscreenLoadingOff = true;
       this.$http
         .get("/ecc/terminal/close/all")
         .then(res => {
@@ -1733,11 +1701,11 @@ export default {
             this.fail_total = res.data.fail_total;
             this.closeALLsuccData = res.data.success_list;
             this.closeALLFailedData = res.data.fail_list;
-            this.fullscreenLoading = false;
+            this.fullscreenLoadingOff = false;
             this.succeedOffDialogVisible = true;
           } else {
-            this.fullscreenLoading = false;
             this.$message.error("一键式应急关闭失败！" + res.data.errmsg);
+            this.fullscreenLoadingOff = false;
           }
         })
         .catch(res => {
@@ -1781,9 +1749,6 @@ export default {
     loadData() {
       this.view_loading_text = "数据加载中";
       this.loadingData = true;
-      setTimeout(() => {
-        this.loadingData = false;
-      }, 10000);
       this.$http
         .get("/ecc/terminal")
         .then(res => {
@@ -1829,11 +1794,9 @@ export default {
           this.$message.success("数据刷新成功！");
         } else {
           this.$message.error("数据刷新失败！" + res.data.errmsg);
+          this.loadingData = false;
         }
       });
-      setTimeout(() => {
-        this.loadingData = false;
-      }, 200000);
       this.aa();
     },
     aa() {
@@ -1873,19 +1836,19 @@ export default {
               switch_port: this.switch_port,
               terminal_type: this.terminal_type
             };
-            this.portOperating = true;
+            this.operateLoading = true;
             this.$http
               .put("/ecc/terminal", obj3)
               .then(res => {
-                if (res.data.errcode !== "0") {
-                  this.$message.error("端口关闭失败！" + res.data.errmsg);
-                  this.portOperating = false;
-                } else {
+                if (res.data.errcode == "0") {
                   this.$message.success("端口关闭成功！");
                   this.portOnOffDialogVisible = false;
-                  this.portOperating = false;
+                  this.operateLoading = false;
                   this.loadData();
                   // console.log(obj3);
+                } else {
+                  this.$message.error("端口关闭失败！" + res.data.errmsg);
+                  this.operateLoading = false;
                 }
               })
               .catch(res => {
@@ -1923,38 +1886,38 @@ export default {
                 terminal_type: this.terminal_type
               };
               if (this.pickTime == "选择时间段") {
-                this.portOperating = true;
+                this.operateLoading = true;
                 this.$http
                   .put("/ecc/terminal", obj2)
                   .then(res => {
-                    if (res.data.errcode !== "0") {
-                      this.$message.error("端口开启失败！" + res.data.errmsg);
-                      this.portOperating = false;
-                    } else {
+                    if (res.data.errcode == "0") {
                       this.$message.success("端口开启成功！");
                       this.portOnOffDialogVisible = false;
-                      this.portOperating = false;
+                      this.operateLoading = false;
                       this.loadData();
                       // console.log(obj2);
+                    } else {
+                      this.$message.error(res.data.errmsg);
+                      this.operateLoading = false;
                     }
                   })
                   .catch(res => {
                     this.$message.error("访问失败！");
                   });
               } else {
-                this.portOperating = true;
+                this.operateLoading = true;
                 this.$http
                   .put("/ecc/terminal", obj1)
                   .then(res => {
-                    if (res.data.errcode !== "0") {
-                      this.$message.error("端口开启失败！" + res.data.errmsg);
-                      this.portOperating = false;
-                    } else {
+                    if (res.data.errcode == "0") {
                       this.$message.success("端口开启成功！");
                       this.portOnOffDialogVisible = false;
-                      this.portOperating = false;
+                      this.operateLoading = false;
                       this.loadData();
                       // console.log(obj1);
+                    } else {
+                      this.$message.error("端口开启失败！" + res.data.errmsg);
+                      this.operateLoading = false;
                     }
                   })
                   .catch(res => {
@@ -1970,9 +1933,6 @@ export default {
             message: "取消对端口进行此操作"
           });
         });
-         setTimeout(() => {
-              this.portOperating = false;
-            }, 200000);
     },
     // 端口开启关闭弹框
     portManage(row) {
@@ -2023,7 +1983,7 @@ export default {
         width: 100%;
         height: 71px;
         .refresh {
-        height: 35px;
+          height: 35px;
         }
         .oprations_btns {
           cursor: pointer; //鼠标变小手
@@ -2238,13 +2198,13 @@ export default {
   float: left;
 }
 .middlePlace {
-    display: block;
-    width: 25%;
-    margin: 0 auto;
+  display: block;
+  width: 25%;
+  margin: 0 auto;
 }
-.el-button--primary{
-    color: #fff;
-  }
+.el-button--primary {
+  color: #fff;
+}
 .failedDialogclose {
   color: #e4e7ed;
 }
