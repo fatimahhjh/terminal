@@ -578,7 +578,9 @@
                 value: '一键式应急端口关闭成功'
               },
               { text: '定时任务开启成功', value: '定时任务开启成功' },
+              { text: '设置定时任务成功', value: '设置定时任务成功' },
               { text: '定时任务开启失败', value: '定时任务开启失败' },
+              { text: '设置定时任务失败', value: '设置定时任务失败' },
               { text: '定时任务关闭失败', value: '定时任务关闭失败' },
               { text: '定时任务关闭成功', value: '定时任务关闭成功' }
             ]"
@@ -604,6 +606,7 @@
                   scope.row.handle_result == '一键式应急端口开启成功' ||
                   scope.row.handle_result == '手动开启成功' ||
                   scope.row.handle_result == '一键式应急端口关闭成功' ||
+                  scope.row.handle_result == '设置定时任务成功' ||
                   scope.row.handle_result == '定时任务关闭成功' ||
                   scope.row.handle_result == '定时任务开启成功'
                     ? 'success'
@@ -980,7 +983,7 @@ export default {
       logData: [],
       loadingLog: true,
       fullscreenLoading: false,
-      fullscreenLoadingOff:false,
+      fullscreenLoadingOff: false,
       operateLoading: false,
       staffDialogVisible: false,
       showOpenSuccess: ["showOpenSuccess"],
