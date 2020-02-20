@@ -282,10 +282,7 @@
               autocomplete="off"
             ></el-input>
           </el-form-item>
-          <!-- <el-form-item label="岗位" :label-width="formLabelWidth" prop="job">
-      <el-input v-model.trim="EditStaffform.job" autocomplete="off"></el-input>
-    </el-form-item> -->
-          <el-form-item label="岗位" :label-width="formLabelWidth">
+          <el-form-item label="岗位" :label-width="formLabelWidth" prop="job">
             <el-select
               :style="{ display: 'inline' }"
               v-model="EditStaffform.job"
@@ -646,7 +643,7 @@
               autocomplete="off"
             ></el-input>
           </el-form-item>
-          <el-form-item label="终端分类" :label-width="formLabelWidth">
+          <el-form-item label="终端分类" :label-width="formLabelWidth" prop="terminal_type">
             <el-select
               :style="{ display: 'inline' }"
               v-model="EditTerminalsform.terminal_type"
@@ -656,9 +653,6 @@
               <el-option label="应急终端" value="应急终端"></el-option>
             </el-select>
           </el-form-item>
-          <!-- <el-form-item label="终端分类" :label-width="formLabelWidth" prop="terminal_type">
-      <el-input v-model.trim="EditTerminalsform.terminal_type" autocomplete="off"></el-input>
-    </el-form-item> -->
           <el-form-item
             label="交换机设备IP"
             :label-width="formLabelWidth"
@@ -700,7 +694,6 @@
             prop="switch_port"
           >
             <el-input
-              @change="onBlur()"
               v-model.trim="EditTerminalsform.switch_port"
               autocomplete="off"
             ></el-input>
@@ -712,7 +705,6 @@
             prop="switch_port"
           >
             <el-input
-              @change="onBlur()"
               v-model.trim="EditTerminalsform.switch_port"
               autocomplete="off"
             ></el-input>
@@ -1033,6 +1025,9 @@ export default {
         }
       ],
       rules: {
+        // job: [
+        //   { required: true, message: '请选择岗位', trigger: 'change' }
+        // ],
         united_iden_num: [
           { required: true, validator: this.checkIdenNum, trigger: "blur" }
         ],
@@ -1123,32 +1118,30 @@ export default {
     getUserInfo().then(res => {
       this.user = res.data.data.username;
       this.userDepartment = res.data.data.department;
-      // console.log(this.username);
     });
   },
   computed: {
     terminalsTableList() {
+       let endData = this.pageNum * this.pageSize;
+        let startData = endData - this.pageSize;
+        return this.data.slice(startData, endData);
+    },
+    data(){
       if (this.filterWord == "") {
-        // return this.tableData;
-        let end = this.pageNum * this.pageSize;
-        let start = end - this.pageSize;
-        return this.tableData.slice(start, end);
-      } else {
+        return this.tableData;
+      }else{
         return this.filterResult;
-        let end = this.pageNum * this.pageSize;
-        let start = end - this.pageSize;
-        return this.filterResult.slice(start, end);
-      }
+}
     }
   },
   methods: {
-    onBlur() {
-      let port = this.EditTerminalsform.switch_port;
-      if (this.portList.includes(port)) {
-        this.$message.warning("该端口已存在!,请重新输入");
-        this.EditTerminalsform.switch_port = "";
-      }
-    },
+    // onBlur() {
+    //   let port = this.EditTerminalsform.switch_port;
+    //   if (this.portList.includes(port)) {
+    //     this.$message.warning("该端口已存在!,请重新输入");
+    //     this.EditTerminalsform.switch_port = "";
+    //   }
+    // },
     checkIdenNum(rule, value, callback) {
       let regNum = /^.{9,9}$/;
       if (value === "" || value == undefined) {
@@ -1178,12 +1171,11 @@ export default {
       this.filterResult = _list;
       var filterLength = parseInt(this.filterResult.length);
       this.totalNum = filterLength;
-      console.log(this.totalNum);
       if (this.filterResult.length == 0) {
         this.$message.error("查无此信息，请确认输入内容是否准确！");
       }
       // this.total = this.list.length;
-      // this.pageNum = 1;
+      this.pageNum = 1;
     },
     onFilteStr(_filteStr) {
       // console.log(_filteStr);
@@ -1202,12 +1194,9 @@ export default {
     handleSizeChange(newSize) {
       // console.log(`每页 ${newSize} 条`);
       this.pageSize = newSize;
-      this.loadData();
     },
     handleCurrentChange(newPage) {
-      // console.log(`当前页: ${newPage}`);
-      this.pageNum = newPage;
-      this.loadData();
+        this.pageNum = newPage;
     },
     handleSizeChange2(newSize) {
       // console.log(`每页 ${newSize} 条`);
@@ -1500,7 +1489,7 @@ export default {
                     this.terminalsDialogVisible = false;
                     this.terminalManage();
                   } else {
-                    this.$message.error("新增终端失败！" + res.data.errmsg);
+                    this.$message.error(res.data.errmsg);
                     this.editTerminalsDialog = false;
                   }
                 })
@@ -1625,7 +1614,7 @@ export default {
                     this.terminalsDialogVisible = false;
                     this.terminalManage();
                   } else {
-                    this.$message.error("修改终端失败！" + res.data.errmsg);
+                    this.$message.error(res.data.errmsg);
                     this.editTerminalsDialog = false;
                   }
                 })
@@ -1794,6 +1783,8 @@ export default {
           this.loadingData = false;
           let list1 = res.data.data;
           this.tableData = list1;
+          this.totalNum = res.data.total;
+          this.terminalList = list1;
           this.$message.success("数据刷新成功！");
         } else {
           this.$message.error("数据刷新失败！" + res.data.errmsg);
