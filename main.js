@@ -6,6 +6,7 @@ import App from "./App.vue";
 import router from "./router";
 import store from "./store";
 import '../src/iconfonts/icons/iconfont.css';
+import './assets/icon/iconfont.css'
 import axios from 'axios'//引入axios
 Vue.prototype.$http = axios;//把axios挂载到vue上
 // 配置请求的根路径

@@ -19,6 +19,9 @@
                   <span class="logo-text">ECC公用终端端口管理工具</span>
                 </a>
               </div>
+              <marquee class="runningHint">
+                每日8：30-9:30为安全部更新网络设备用户登陆密码时间窗口，在该窗口内如碰到工具端口状态显示为空的情况属正常现象，工具对端口开关操作请尽量避开该窗口时间。其他时间段工具端口状态实时同步嘉定ECC现场终端设备，如遇到端口状态显示不正常的情况，请及时联系网络一部处理，谢谢！
+              </marquee>
             </div>
           </el-col>
           <el-col :span="12"
@@ -78,6 +81,12 @@
     border-radius: 5px;
     /deep/.el_main {
       padding: 4px;
+    }
+    .runningHint {
+      position: relative;
+      left: 57%;
+      top: -65px;
+      color: white;
     }
     .logo_box {
       text-indent: 3px;
@@ -151,6 +160,7 @@
 </style>
 
 <script>
+import marquee from "./views/marquee.vue";
 import { getCookie } from "./utils/getCookie.js";
 import { getUserInfo } from "./utils/getUserInfo.js";
 export default {
@@ -159,11 +169,10 @@ export default {
       activeIndex: "1",
       department: "",
       username: "",
-      position:""
+      position: ""
     };
   },
   methods: {
-    
     login() {
       window.location.href = "/login?next=" + window.location.href;
     },
@@ -202,13 +211,21 @@ export default {
     // if (this.$root.Hub.username == "") {
     // }
     getUserInfo().then(res => {
-      if ((res.data.errcode == "0")) {
+      if (res.data.errcode == "0") {
         this.username = res.data.data.username;
         this.department = res.data.data.department;
-        this.position =  res.data.data.job
+        this.position = res.data.data.job;
         // console.log(this.username);
+        this.$alert(
+          "每日8：30-9:30为安全部更新网络设备用户登陆密码时间窗口，在该窗口内如碰到工具端口状态显示为空的情况属正常现象，工具对端口开关操作请尽量避开该窗口时间。其他时间段工具端口状态实时同步嘉定ECC现场终端设备，如遇到端口状态显示不正常的情况，请及时联系网络一部处理，谢谢！",
+          "Attention",
+          {
+            confirmButtonText: "我已知晓",
+            callback: action => {}
+          }
+        );
       } else {
-       this.login()
+        this.login();
       }
     });
   }

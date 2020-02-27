@@ -1,0 +1,23 @@
+{
+  "id": "1521050",
+  "name": "hjh-icon",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "13188812",
+      "name": "资源 14",
+      "font_class": "ziyuan1-copy",
+      "unicode": "e605",
+      "unicode_decimal": 58885
+    },
+    {
+      "icon_id": "13188814",
+      "name": "资源 13",
+      "font_class": "ziyuan-copy",
+      "unicode": "e606",
+      "unicode_decimal": 58886
+    }
+  ]
+}

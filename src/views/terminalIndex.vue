@@ -28,13 +28,13 @@
                 effect="dark"
                 @click="emergencyOnekeyOn()"
                 class="emergencyOn_btn"
-                >一键应急开启</el-tag
+                >应急终端一键开启</el-tag
               >
               <el-tag
                 effect="dark"
                 @click="emergencyOnekeyOff()"
                 class="emergencyOff_btn"
-                >一键应急关闭</el-tag
+                >应急终端一键关闭</el-tag
               >
             </div>
             <div class="nav_right">
@@ -219,6 +219,19 @@
         element-loading-spinner="el-icon-loading"
         element-loading-background="rgba(0, 0, 0, 0.8)"
       >
+        <div class="positionRightHint">
+          <el-tooltip class="item" effect="light" placement="bottom-start">
+            <div slot="content">
+              <el-table :data="positionRight" border style="width: 100%">
+                <el-table-column prop="position" label="岗位" width="180">
+                </el-table-column>
+                <el-table-column prop="right" label="职责" width="710%">
+                </el-table-column>
+              </el-table>
+            </div>
+            <el-button size="mini" icon="el-icon-info">岗位职责提示</el-button>
+          </el-tooltip>
+        </div>
         <div class="multiUpload">
           <el-button type="warning" size="mini" @click="showUploadStaffDialog"
             >批量上传新增人员</el-button
@@ -643,7 +656,11 @@
               autocomplete="off"
             ></el-input>
           </el-form-item>
-          <el-form-item label="终端分类" :label-width="formLabelWidth" prop="terminal_type">
+          <el-form-item
+            label="终端分类"
+            :label-width="formLabelWidth"
+            prop="terminal_type"
+          >
             <el-select
               :style="{ display: 'inline' }"
               v-model="EditTerminalsform.terminal_type"
@@ -826,20 +843,54 @@
             >确认一键关闭</el-button
           >
         </span>
-        <el-table :data="confirmData" style="width: 100%">
-          <el-table-column prop="terminal_type" label="终端类型">
-          </el-table-column>
-          <el-table-column prop="location" label="物理位置"> </el-table-column>
-          <el-table-column prop="terminal_ip" label="终端地址">
-          </el-table-column>
-          <el-table-column prop="switch_ip" label="交换机地址">
-          </el-table-column>
-          <el-table-column prop="switch_name" label="交换机名称">
-          </el-table-column>
-          <el-table-column prop="switch_port" label="交换机端口">
-          </el-table-column>
-          <el-table-column prop="status" label="状态"> </el-table-column>
-        </el-table>
+        <el-collapse v-model="showOpenSuccess" accordion>
+          <el-collapse-item name="showOpenSuccess">
+            <template slot="title">
+              端口状态为On的设备列表：<i
+                class="iconfont iconziyuan1-copy"
+                style="color:#219e4e"
+              ></i>
+            </template>
+            <el-table :data="on_list" style="width: 100%">
+              <el-table-column prop="location" label="物理位置" width="180">
+              </el-table-column>
+              <el-table-column prop="terminal_ip" label="终端IP" width="180">
+              </el-table-column>
+              <el-table-column prop="switch_ip" label="交换机IP">
+              </el-table-column>
+              <el-table-column prop="switch_name" label="交换机设备名称">
+              </el-table-column>
+              <el-table-column prop="switch_port" label="交换机设备接入端口">
+              </el-table-column>
+              <el-table-column prop="status" label="运行状态">
+              </el-table-column>
+            </el-table>
+          </el-collapse-item>
+        </el-collapse>
+        <el-collapse v-model="showOpenSuccess" accordion>
+          <el-collapse-item>
+            <template slot="title">
+              端口状态为Off的设备列表：<i
+                class="iconfont iconziyuan-copy"
+                style="color:#707070"
+              ></i>
+            </template>
+            <el-table :data="off_list" style="width: 100%">
+              <el-table-column prop="location" label="物理位置" width="180">
+              </el-table-column>
+              <el-table-column prop="terminal_ip" label="终端IP" width="180">
+              </el-table-column>
+              <el-table-column prop="switch_ip" label="交换机IP">
+              </el-table-column>
+              <el-table-column prop="switch_name" label="交换机设备名称">
+              </el-table-column>
+              <el-table-column prop="switch_port" label="交换机设备接入端口">
+              </el-table-column>
+              <el-table-column prop="status" label="运行状态">
+              </el-table-column>
+            </el-table>
+          </el-collapse-item>
+        </el-collapse>
       </el-dialog>
       <!-- 一键开启前确认框 -->
       <el-dialog
@@ -861,20 +912,54 @@
             >确认一键开启</el-button
           >
         </span>
-        <el-table :data="confirmData" style="width: 100%">
-          <el-table-column prop="terminal_type" label="终端类型">
-          </el-table-column>
-          <el-table-column prop="location" label="物理位置"> </el-table-column>
-          <el-table-column prop="terminal_ip" label="终端地址">
-          </el-table-column>
-          <el-table-column prop="switch_ip" label="交换机地址">
-          </el-table-column>
-          <el-table-column prop="switch_name" label="交换机名称">
-          </el-table-column>
-          <el-table-column prop="switch_port" label="交换机端口">
-          </el-table-column>
-          <el-table-column prop="status" label="状态"> </el-table-column>
-        </el-table>
+        <el-collapse v-model="showOpenSuccess" accordion>
+          <el-collapse-item name="showOpenSuccess">
+            <template slot="title">
+              端口状态为Off的设备列表：<i
+                class="iconfont iconziyuan-copy"
+                style="color:#707070"
+              ></i>
+            </template>
+            <el-table :data="off_list" style="width: 100%">
+              <el-table-column prop="location" label="物理位置" width="180">
+              </el-table-column>
+              <el-table-column prop="terminal_ip" label="终端IP" width="180">
+              </el-table-column>
+              <el-table-column prop="switch_ip" label="交换机IP">
+              </el-table-column>
+              <el-table-column prop="switch_name" label="交换机设备名称">
+              </el-table-column>
+              <el-table-column prop="switch_port" label="交换机设备接入端口">
+              </el-table-column>
+              <el-table-column prop="status" label="运行状态">
+              </el-table-column>
+            </el-table>
+          </el-collapse-item>
+        </el-collapse>
+        <el-collapse v-model="showOpenSuccess" accordion>
+          <el-collapse-item>
+            <template slot="title">
+              端口状态为On的设备列表：<i
+                class="iconfont iconziyuan1-copy"
+                style="color:#219e4e"
+              ></i>
+            </template>
+            <el-table :data="on_list" style="width: 100%">
+              <el-table-column prop="location" label="物理位置" width="180">
+              </el-table-column>
+              <el-table-column prop="terminal_ip" label="终端IP" width="180">
+              </el-table-column>
+              <el-table-column prop="switch_ip" label="交换机IP">
+              </el-table-column>
+              <el-table-column prop="switch_name" label="交换机设备名称">
+              </el-table-column>
+              <el-table-column prop="switch_port" label="交换机设备接入端口">
+              </el-table-column>
+              <el-table-column prop="status" label="运行状态">
+              </el-table-column>
+            </el-table>
+          </el-collapse-item>
+        </el-collapse>
       </el-dialog>
       <!-- 一键开启成功对话框 -->
       <el-dialog
@@ -973,6 +1058,23 @@ export default {
   data() {
     return {
       logData: [],
+      positionRight: [
+        {
+          position: "运行值班经理岗",
+          right:
+            "负责处理公用终端网络端口开关使用申请，对申请的公用终端在工具上执行网络端口的开通、断开操作"
+        },
+        {
+          position: "运行维护岗",
+          right:
+            "负责维护“使用人员管理”中运行一部人员名单，实现运行一部使用人员的增加、删除和编辑操作，无公用终端网络端口管理权限"
+        },
+        {
+          position: "系统管理岗",
+          right:
+            "负责维护ECC公用终端网络端口，根据运行一部提供的公用终端增删清单，实现公用终端网络端口的增加、删除和编辑操作；系统管理岗人员增加、删除和编辑操作由网络一部人员管理，不受运行维护岗管理"
+        }
+      ],
       loadingLog: true,
       fullscreenLoading: false,
       fullscreenLoadingOff: false,
@@ -1000,7 +1102,8 @@ export default {
       openALLSuccData: [],
       closeALLFailedData: [],
       openALLFailedData: [],
-      confirmData: [],
+      off_list: [],
+      on_list: [],
       newTime: "",
       portList: [],
       filterWord: "",
@@ -1122,16 +1225,16 @@ export default {
   },
   computed: {
     terminalsTableList() {
-       let endData = this.pageNum * this.pageSize;
-        let startData = endData - this.pageSize;
-        return this.data.slice(startData, endData);
+      let endData = this.pageNum * this.pageSize;
+      let startData = endData - this.pageSize;
+      return this.data.slice(startData, endData);
     },
-    data(){
+    data() {
       if (this.filterWord == "") {
         return this.tableData;
-      }else{
+      } else {
         return this.filterResult;
-}
+      }
     }
   },
   methods: {
@@ -1196,7 +1299,7 @@ export default {
       this.pageSize = newSize;
     },
     handleCurrentChange(newPage) {
-        this.pageNum = newPage;
+      this.pageNum = newPage;
     },
     handleSizeChange2(newSize) {
       // console.log(`每页 ${newSize} 条`);
@@ -1669,7 +1772,8 @@ export default {
             this.confirmVisible = true;
             this.$http.get("/ecc/terminal/all/port").then(res => {
               if (res.data.errcode == "0") {
-                this.confirmData = res.data.data;
+                this.on_list = res.data.on_list;
+                this.off_list = res.data.off_list;
                 this.confirmVisible = true;
               } else {
                 this.$message.error("数据获取失败！");
@@ -1681,7 +1785,7 @@ export default {
           this.$message.error("访问失败！");
         });
     },
-    // 一键应急关闭端口预览
+    // 一键应急关闭
     confirmCloseAll() {
       this.confirmOffVisible = false;
       this.fullscreenLoadingOff = true;
@@ -1704,7 +1808,7 @@ export default {
           this.$message.error("访问失败！");
         });
     },
-    // 一键应急端口关闭
+    // 一键应急端口关闭端口预览
     emergencyOnekeyOff() {
       this.$http
         .get("/ecc/auth/manager")
@@ -1714,7 +1818,8 @@ export default {
           } else {
             this.$http.get("/ecc/terminal/all/port").then(res => {
               if (res.data.errcode == "0") {
-                this.confirmData = res.data.data;
+                this.on_list = res.data.on_list;
+                this.off_list = res.data.off_list;
                 this.confirmOffVisible = true;
               } else {
                 this.$message.error("数据获取失败！");
@@ -2079,6 +2184,17 @@ export default {
   }
   .multiUpload {
     margin-left: 50%;
+  }
+  .positionRightHint {
+    width: 10%;
+    float: left;
+    .item {
+      margin: 4px;
+    }
+    .left .el-tooltip__popper,
+    .right .el-tooltip__popper {
+      padding: 8px 10px;
+    }
   }
   .nav_right {
     width: 600px;
