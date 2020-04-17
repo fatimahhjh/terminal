@@ -19,9 +19,6 @@
                   <span class="logo-text">ECC公用终端端口管理工具</span>
                 </a>
               </div>
-              <marquee class="runningHint">
-                每日8：30-9:30为安全部更新网络设备用户登陆密码时间窗口，在该窗口内如碰到工具端口状态显示为空的情况属正常现象，工具对端口开关操作请尽量避开该窗口时间。其他时间段工具端口状态实时同步嘉定ECC现场终端设备，如遇到端口状态显示不正常的情况，请及时联系网络一部处理，谢谢！
-              </marquee>
             </div>
           </el-col>
           <el-col :span="12"
@@ -55,6 +52,11 @@
           </el-col>
         </el-row>
       </el-header>
+      <div class="runningHint">
+        <marquee>
+          每日8：30-9:30为安全部更新网络设备用户登陆密码时间窗口，在该窗口内如碰到工具端口状态显示为空的情况属正常现象，工具对端口开关操作请尽量避开该窗口时间。其他时间段工具端口状态实时同步嘉定ECC现场终端设备，如遇到端口状态显示不正常的情况，请及时联系网络一部处理，谢谢！
+        </marquee>
+      </div>
       <div class="deal_wrap">
         <el-main>
           <router-view></router-view>
@@ -81,12 +83,6 @@
     border-radius: 5px;
     /deep/.el_main {
       padding: 4px;
-    }
-    .runningHint {
-      position: relative;
-      left: 57%;
-      top: -65px;
-      color: white;
     }
     .logo_box {
       text-indent: 3px;
@@ -122,6 +118,7 @@
         }
       }
     }
+
     .head-right {
       width: 148px;
       height: 57px;
@@ -145,6 +142,13 @@
         margin-right: 2px;
       }
     }
+  }
+  .runningHint {
+    position: relative;
+    left: 34%;
+    width: 39%;
+    top: -36px;
+    color: white;
   }
   .deal_wrap {
     background: rgb(240, 241, 241);

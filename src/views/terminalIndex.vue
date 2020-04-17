@@ -15,7 +15,7 @@
                 class="downLog"
                 >活动日志下载</el-tag
               > -->
-              <el-tag effect="dark" @click="showLog()" class="downTime"
+              <el-tag effect="dark" @click="showLog" class="downTime"
                 >操作日志</el-tag
               >
               <el-tag effect="dark" @click="staffManage" class="staff_btn"
@@ -64,6 +64,9 @@
         </div>
         <!-- 加载终端所有信息 -->
         <el-table
+          ref="multipleTable"
+          tooltip-effect="dark"
+          @selection-change="handleSelectionChange"
           :data="terminalsTableList"
           style="width:100%"
           v-loading="loadingData"
@@ -71,6 +74,7 @@
           element-loading-spinner="el-icon-loading"
           element-loading-background="rgba(0, 0, 0, 0.5)"
         >
+          <el-table-column type="selection"> </el-table-column>
           <el-table-column type="index" label="序号"> </el-table-column>
           <el-table-column prop="terminal_type" label="终端类型">
           </el-table-column>
@@ -118,6 +122,14 @@
           <el-table-column fixed="right" label="管理状态">
             <template slot-scope="scope">
               <el-button
+                v-if="multipleSelection.length != 0"
+                type="primary"
+                size="mini"
+                @click="multiPortsManage(scope.row)"
+                >批量端口管理</el-button
+              >
+              <el-button
+                v-else
                 type="primary"
                 size="mini"
                 @click="portManage(scope.row)"
@@ -130,7 +142,7 @@
         <el-pagination
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
-          :current-page="pageNum"
+          :current-page="currentPage"
           :page-sizes="[10, 20, 30, 40]"
           :page-size="pageSize"
           layout="total, sizes, prev, pager, next, jumper"
@@ -300,6 +312,7 @@
               :style="{ display: 'inline' }"
               v-model="EditStaffform.job"
               placeholder="请选择人员岗位"
+              @change="compareWithDepartment"
             >
               <el-option label="运行维护岗" value="运行维护岗"></el-option>
               <el-option
@@ -324,11 +337,26 @@
             :label-width="formLabelWidth"
             prop="department"
           >
-            <el-input
+            <el-select
+              :style="{ display: 'inline' }"
+              v-model="EditStaffform.department"
+              placeholder="请选择人员部门"
+              @change="compareWithjob"
+            >
+              <el-option
+                label="数据中心运行一部"
+                value="数据中心运行一部"
+              ></el-option>
+              <el-option
+                label="数据中心网络一部"
+                value="数据中心网络一部"
+              ></el-option>
+            </el-select>
+            <!-- <el-input
               v-model.trim="EditStaffform.department"
               placeholder="请输入数据中心XX部"
               autocomplete="off"
-            ></el-input>
+            ></el-input> -->
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
@@ -431,7 +459,16 @@
             <el-row>
               <el-col :span="24"
                 ><div class="grid-content bg-purple-dark">
-                  <div class="middle_place1">
+                  <div v-if="multipleSelection.length > 0">
+                    <div
+                      class="listPosition"
+                      v-for="(item, index) in switchPortList"
+                      :key="index"
+                    >
+                      终端 {{ item.ip }} 的 {{ item.port }} 端口 ,
+                    </div>
+                  </div>
+                  <div v-else class="middle_place1">
                     终端 {{ terminal_ip }} 的 {{ switch_port }} 端口
                   </div>
                 </div></el-col
@@ -527,6 +564,8 @@
           ref="filterTable"
           style="width: 100%"
           v-loading="loadingLog"
+          element-loading-text="拼命加载日志信息中"
+          element-loading-spinner="el-icon-loading"
         >
           <el-table-column
             prop="handle_time"
@@ -699,6 +738,7 @@
               :style="{ display: 'inline' }"
               v-model="EditTerminalsform.switch_name"
               placeholder="请选择交换机设备名称"
+              @change="autoSelectIp"
             >
               <el-option label="JD49SW13-M2" value="JD49SW13-M2"></el-option>
               <el-option label="JD45SW01-M2" value="JD45SW01-M2"></el-option>
@@ -1098,7 +1138,11 @@ export default {
       pickTime: "",
       timeRange: "",
       tableData: [],
+      compareParam: "",
       closeALLsuccData: [],
+      multipleSelection: [],
+      termIpList: [],
+      switchPortList: [],
       openALLSuccData: [],
       closeALLFailedData: [],
       openALLFailedData: [],
@@ -1213,8 +1257,16 @@ export default {
       loadingStaff: true,
       loadingTerminal: true,
       user: "",
+      localPage: 1,
       userDepartment: ""
     };
+  },
+  created() {
+    this.localPage = JSON.parse(sessionStorage.getItem("page"));
+    // console.log(this.localPage)
+    if (this.localPage) {
+      sessionStorage.removeItem("page");
+    }
   },
   mounted() {
     this.loadData();
@@ -1224,6 +1276,15 @@ export default {
     });
   },
   computed: {
+    currentPage() {
+      if (this.localPage) {
+        return this.localPage;
+        Console.log(this.localPage);
+      } else {
+        return this.pageNum;
+        Console.log(this.pageNum);
+      }
+    },
     terminalsTableList() {
       let endData = this.pageNum * this.pageSize;
       let startData = endData - this.pageSize;
@@ -1245,6 +1306,11 @@ export default {
     //     this.EditTerminalsform.switch_port = "";
     //   }
     // },
+    //多选框事件
+    handleSelectionChange(val) {
+      this.multipleSelection = val;
+      // console.log(this.multipleSelection)
+    },
     checkIdenNum(rule, value, callback) {
       let regNum = /^.{9,9}$/;
       if (value === "" || value == undefined) {
@@ -1259,13 +1325,11 @@ export default {
       }
     },
     checkDepartment(rule, value, callback) {
-      if (value === "" || value == undefined) {
+      if (value === "" || this.EditStaffform.department == undefined) {
         callback(new Error("请输入部门(数据中心XX部)"));
-      }
-      //  else if (this.userDepartment !== value) {
-      //   callback(new Error("您没有权限新增该部门人员信息！按(数据中心XX部)填写"));
-      // }
-      else {
+      } else if (this.userDepartment !== this.EditStaffform.department) {
+        callback(new Error("您没有权限管理该岗位和部门人员信息！"));
+      } else {
         callback();
       }
     },
@@ -1273,7 +1337,7 @@ export default {
     onList(_list) {
       this.filterResult = _list;
       var filterLength = parseInt(this.filterResult.length);
-      this.totalNum = filterLength;
+      this.moouttotalNum = filterLength;
       if (this.filterResult.length == 0) {
         this.$message.error("查无此信息，请确认输入内容是否准确！");
       }
@@ -1291,6 +1355,38 @@ export default {
         this.EditTerminalsform.switch_name = "JD45SW01-M2";
       } else {
         this.EditTerminalsform.switch_name = "JD49SW13-M2";
+      }
+    },
+    // 交换机name变了交换机ip也变
+    autoSelectIp(val) {
+      if (val == "JD45SW01-M2") {
+        this.EditTerminalsform.switch_ip = "76.7.115.151";
+      } else {
+        this.EditTerminalsform.switch_ip = "76.7.115.156";
+      }
+    },
+    // 岗位对应部门权限方法
+    compareWithDepartment(val) {
+      // console.log('autoSelectName',val)
+      if (val == "运行维护岗" || val == "运行值班经理岗") {
+        this.EditStaffform.department = "数据中心运行一部";
+        // this.compareParam = '运行'
+        this.$refs.form.clearValidate();
+      } else {
+        this.EditStaffform.department = "数据中心网络一部";
+        this.$refs.form.clearValidate();
+        // console.log(this.EditStaffform.department)
+      }
+    },
+    // 部门对应岗位权限方法
+    compareWithjob(val) {
+      // console.log('autoSelectName',val)
+      if (val == "数据中心网络一部") {
+        this.EditStaffform.job = "系统管理岗";
+        this.$refs.form.clearValidate();
+      } else {
+        this.EditStaffform.job = "运行值班经理岗";
+        this.$refs.form.clearValidate();
       }
     },
     // 监听每页显示多少条信息
@@ -1323,10 +1419,10 @@ export default {
     },
     // 管理人员事件
     staffManage() {
-      this.staffDialogVisible = true;
       this.loadingStaff = true;
       this.$http.get("/ecc/auth/operation").then(res => {
         if (res.data.errcode == 0) {
+          this.staffDialogVisible = true;
           this.$http
             .get("/ecc/staff")
             .then(res => {
@@ -1357,55 +1453,53 @@ export default {
       // console.log(index,row)
       this.staffTitle = "修改使用人员信息";
       let _row = row;
-      this.EditStaffform = Object.assign({}, _row);
-      this.editStaffDialog = true;
-      // if (
-      //   this.userDepartment=="数据中心运行一部" &&
-      //   _row.department=="数据中心网络一部"
-      // ) {
-      //   this.$message.warning("您没有权限修改网络一部人员信息！");
-      // } else if (
-      //   this.userDepartment=="数据中心网络一部" &&
-      //   _row.department=="数据中心运行一部"
-      // ) {
-      //   this.$message.warning("您没有权限修改运行一部人员信息！");
-      // } else {
-
-      // }
-
+      if (
+        this.userDepartment == "数据中心运行一部" &&
+        _row.department == "数据中心网络一部"
+      ) {
+        this.$message.warning("您没有权限修改网络一部人员信息！");
+      } else if (
+        this.userDepartment == "数据中心网络一部" &&
+        _row.department == "数据中心运行一部"
+      ) {
+        this.$message.warning("您没有权限修改运行一部人员信息！");
+      } else {
+        this.EditStaffform = Object.assign({}, _row);
+        this.editStaffDialog = true;
+      }
       //将每一行的数据赋值给Dialog弹框（这里是重点）
     },
     // 删除人员
     deleteStaff(staff_id, indenti_num, department) {
-      this.$confirm("此操作将永久删除该人员, 是否继续?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning"
-      })
-        .then(() => {
-          this.$http.delete("/ecc/staff?staff_id=" + staff_id).then(res => {
-            if (res.data.errcode == "0") {
-              // this.$message.success("人员删除成功！");
-              this.staffManage();
-            } else {
-              this.$message.error("人员删除失败！");
-            }
-          });
-          this.$message({
-            type: "success",
-            message: "人员删除成功!"
-          });
+      if (this.userDepartment !== department) {
+        this.$message.warning("您没有权限删除该部人员信息！");
+      } else {
+        this.$confirm("此操作将永久删除该人员, 是否继续?", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning"
         })
-        .catch(() => {
-          this.$message({
-            type: "info",
-            message: "已取消删除"
+          .then(() => {
+            this.$http.delete("/ecc/staff?staff_id=" + staff_id).then(res => {
+              if (res.data.errcode == "0") {
+                // this.$message.success("人员删除成功！");
+                this.staffManage();
+              } else {
+                this.$message.error("人员删除失败！");
+              }
+            });
+            this.$message({
+              type: "success",
+              message: "人员删除成功!"
+            });
+          })
+          .catch(() => {
+            this.$message({
+              type: "info",
+              message: "已取消删除"
+            });
           });
-        });
-      // if (this.userDepartment !== department) {
-      //   this.$message.warning("您没有权限删除该部人员信息！");
-      // } else {
-      // }
+      }
     },
     closeTermDialog(done) {
       this.$confirm("确认关闭？")
@@ -1433,6 +1527,7 @@ export default {
     },
     // 确认新增使用人员
     confirmStaffAdd() {
+      // console.log(this.EditStaffform.department,'sss',this.userDepartment)
       this.$confirm("确认新增人员信息？", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
@@ -1511,7 +1606,7 @@ export default {
                     this.staffDialogVisible = false;
                     this.staffManage();
                   } else {
-                    this.$message.error("修改人员失败！" + res.data.errmsg);
+                    this.$message.error(res.data.errmsg);
                     this.editStaffDialog = false;
                   }
                 })
@@ -1533,13 +1628,13 @@ export default {
     // 终端管理
     terminalManage() {
       this.loadingTerminal = true;
-      this.terminalsDialogVisible = true;
       this.$http
         .get("/ecc/auth/system")
         .then(res => {
           if (res.data.errcode !== "0") {
             this.$message.warning("对不起，您没有此权限！");
           } else {
+            this.terminalsDialogVisible = true;
             this.$http
               .get("/ecc/terminal")
               .then(res => {
@@ -1676,7 +1771,7 @@ export default {
                 this.$message.success("终端删除成功！");
                 this.terminalManage();
               } else {
-                this.$message.error("终端删除失败！" + res.data.errmsg);
+                this.$message.error(res.data.errmsg);
               }
             });
         })
@@ -1750,10 +1845,30 @@ export default {
             this.openALLSuccData = res.data.success_list;
             this.openALLFailedData = res.data.fail_list;
             this.fullscreenLoading = false;
+            if (res.data.fail_total == 0) {
+              this.$message({
+                showClose: true,
+                duration: 0,
+                message: "应急终端一键开启全部成功！",
+                type: "success"
+              });
+            } else {
+              this.$message({
+                showClose: true,
+                duration: 0,
+                message: "应急终端一键开启部分成功！失败的请联系值班老师",
+                type: "warning"
+              });
+            }
             this.succeedDialogVisible = true;
           } else {
             this.fullscreenLoading = false;
-            this.$message.error("一键式应急开启失败！" + res.data.errmsg);
+            this.$message({
+              showClose: true,
+              duration: 0,
+              message: res.data.errmsg,
+              type: "error"
+            });
           }
         })
         .catch(res => {
@@ -1798,9 +1913,29 @@ export default {
             this.closeALLsuccData = res.data.success_list;
             this.closeALLFailedData = res.data.fail_list;
             this.fullscreenLoadingOff = false;
+            if (res.data.fail_total == 0) {
+              this.$message({
+                showClose: true,
+                duration: 0,
+                message: "应急终端一键关闭全部成功！",
+                type: "success"
+              });
+            } else {
+              this.$message({
+                showClose: true,
+                duration: 0,
+                message: "应急终端一键关闭部分成功！失败的请联系值班老师",
+                type: "warning"
+              });
+            }
             this.succeedOffDialogVisible = true;
           } else {
-            this.$message.error("一键式应急关闭失败！" + res.data.errmsg);
+            this.$message({
+              showClose: true,
+              duration: 0,
+              message: res.data.errmsg,
+              type: "error"
+            });
             this.fullscreenLoadingOff = false;
           }
         })
@@ -1892,7 +2027,7 @@ export default {
           this.terminalList = list1;
           this.$message.success("数据刷新成功！");
         } else {
-          this.$message.error("数据刷新失败！" + res.data.errmsg);
+          this.$message.error(res.data.errmsg);
           this.loadingData = false;
         }
       });
@@ -1944,10 +2079,14 @@ export default {
                   this.portOnOffDialogVisible = false;
                   this.operateLoading = false;
                   this.loadData();
+
+                  console.log(this.pageNum);
                   // console.log(obj3);
                 } else {
-                  this.$message.error("端口关闭失败！" + res.data.errmsg);
+                  this.$message.error(res.data.errmsg);
                   this.operateLoading = false;
+
+                  console.log(this.pageNum);
                 }
               })
               .catch(res => {
@@ -1994,10 +2133,14 @@ export default {
                       this.portOnOffDialogVisible = false;
                       this.operateLoading = false;
                       this.loadData();
+
+                      console.log(this.pageNum);
                       // console.log(obj2);
                     } else {
                       this.$message.error(res.data.errmsg);
                       this.operateLoading = false;
+
+                      console.log(this.pageNum);
                     }
                   })
                   .catch(res => {
@@ -2013,10 +2156,14 @@ export default {
                       this.portOnOffDialogVisible = false;
                       this.operateLoading = false;
                       this.loadData();
+
+                      console.log(this.pageNum);
                       // console.log(obj1);
                     } else {
-                      this.$message.error("端口开启失败！" + res.data.errmsg);
+                      this.$message.error(res.data.errmsg);
                       this.operateLoading = false;
+
+                      console.log(this.pageNum);
                     }
                   })
                   .catch(res => {
@@ -2033,9 +2180,20 @@ export default {
           });
         });
     },
-    // 端口开启关闭弹框
+    // 多个端口管理
+    multiPortsManage(row) {
+      this.multipleSelection.forEach(item => {
+        this.switchPortList.push({
+          ip: item.terminal_ip,
+          port: item.switch_port
+        });
+        console.log(this.switchPortList);
+        this.portOnOffDialogVisible = true;
+      });
+    },
+    // 单个端口开启关闭弹框
     portManage(row) {
-      console.log(row);
+      sessionStorage.setItem("page", this.pageNum);
       this.timeRange = "";
       this.$http.get("/ecc/auth/manager").then(res => {
         if (res.data.errcode !== "0") {
@@ -2086,7 +2244,7 @@ export default {
         }
         .oprations_btns {
           cursor: pointer; //鼠标变小手
-          width: 659px;
+          width: 757px;
           margin-left: -13px;
           margin-left: -44px;
           .staff_btn {
@@ -2146,6 +2304,11 @@ export default {
   .grid-content {
     border-radius: 4px;
     min-height: 53px;
+    .listPosition {
+      display: inline-block;
+      font-weight: 600;
+      font-size: 15px;
+    }
   }
   .middle_place2 {
     position: relative;
@@ -2159,7 +2322,6 @@ export default {
     top: 19px;
     left: 42px;
   }
-
   .middle_place1 {
     position: relative;
     top: 17px;
