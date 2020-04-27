@@ -2060,10 +2060,57 @@ export default {
       })
         .then(() => {
           if(this.multipleSelection.length !== 0){
-          if(this.multipleSelection[0].status == "on" && this.compareStatus == "on"){
+          if(this.multipleSelection[0].status == "on" && this.portStatus == "on"){
             this.$message.error("此端口已打开，请勿重复打开！");
-          }else if (this.multipleSelection[0].status == "off" && this.compareStatus == "off") {
+          }else if (this.multipleSelection[0].status == "off" && this.portStatus == "off") {
               this.$message.error("此端口已关闭，请勿重复关闭！");
+          }
+          else{
+            if (this.portStatus == "off") {
+              var offobj ={
+                status:this.portStatus,
+                available_time: "",
+                multiselection:this.multipleSelection
+              }
+                this.operateLoading = true;
+              this.$http
+                .put("/ecc/terminal", offobj)
+                .then(res => {
+                  if (res.data.errcode == "0") {
+                    this.$message.success("端口关闭成功！");
+                    this.portOnOffDialogVisible = false;
+                    this.operateLoading = false;
+                    this.view_loading_text = "端口状态同步中，请稍等...";
+                    this.loadingData = true;
+                    this.$http.get("/ecc/terminal/real/data").then(res => {
+                      if (res.data.errcode == "0") {
+                        this.loadingData = false;
+                        let list1 = res.data.data;
+                        this.tableData = list1;
+                        this.totalNum = res.data.total;
+                        this.terminalList = list1;
+                        this.$message.success("端口状态同步成功！");
+                        this.localPage = JSON.parse(
+                          sessionStorage.getItem("page")
+                        );
+                        if (this.localPage) {
+                          sessionStorage.removeItem("page");
+                        }
+                      } else {
+                        this.$message.error(res.data.errmsg);
+                        this.loadingData = false;
+                      }
+                    });
+                  } else {
+                    this.$message.error(res.data.errmsg);
+                    this.operateLoading = false;
+                  }
+                })
+                .catch(res => {
+                  this.$message.error("访问失败！");
+                });
+            
+            }
           }
           }else{
           if (this.portStatus == "on" && this.compareStatus == "on") {
@@ -2104,7 +2151,6 @@ export default {
                         this.localPage = JSON.parse(
                           sessionStorage.getItem("page")
                         );
-                        // console.log(this.localPage,'lll')
                         if (this.localPage) {
                           sessionStorage.removeItem("page");
                         }
@@ -2113,10 +2159,6 @@ export default {
                         this.loadingData = false;
                       }
                     });
-                    // this.loadData();
-
-                    console.log(this.pageNum);
-                    // console.log(obj3);
                   } else {
                     this.$message.error(res.data.errmsg);
                     this.operateLoading = false;
