@@ -1310,7 +1310,7 @@ export default {
     //多选框事件
     handleSelectionChange(val) {
       this.multipleSelection = val;
-      console.log(this.multipleSelection);
+      // console.log(this.multipleSelection);
     },
     checkIdenNum(rule, value, callback) {
       let regNum = /^.{9,9}$/;
@@ -2059,243 +2059,347 @@ export default {
         type: "warning"
       })
         .then(() => {
-          if(this.multipleSelection.length !== 0){
-          if(this.multipleSelection[0].status == "on" && this.portStatus == "on"){
-            this.$message.error("此端口已打开，请勿重复打开！");
-          }else if (this.multipleSelection[0].status == "off" && this.portStatus == "off") {
+          if (this.multipleSelection.length !== 0) {
+            if (
+              this.multipleSelection[0].status == "on" &&
+              this.portStatus == "on"
+            ) {
+              this.$message.error("此端口已打开，请勿重复打开！");
+            } else if (
+              this.multipleSelection[0].status == "off" &&
+              this.portStatus == "off"
+            ) {
               this.$message.error("此端口已关闭，请勿重复关闭！");
-          }
-          else{
-            if (this.portStatus == "off") {
-              var offobj ={
-                status:this.portStatus,
-                available_time: "",
-                multiselection:this.multipleSelection
-              }
-                this.operateLoading = true;
-              this.$http
-                .put("/ecc/terminal", offobj)
-                .then(res => {
-                  if (res.data.errcode == "0") {
-                    this.$message.success("端口关闭成功！");
-                    this.portOnOffDialogVisible = false;
-                    this.operateLoading = false;
-                    this.view_loading_text = "端口状态同步中，请稍等...";
-                    this.loadingData = true;
-                    this.$http.get("/ecc/terminal/real/data").then(res => {
-                      if (res.data.errcode == "0") {
-                        this.loadingData = false;
-                        let list1 = res.data.data;
-                        this.tableData = list1;
-                        this.totalNum = res.data.total;
-                        this.terminalList = list1;
-                        this.$message.success("端口状态同步成功！");
-                        this.localPage = JSON.parse(
-                          sessionStorage.getItem("page")
-                        );
-                        if (this.localPage) {
-                          sessionStorage.removeItem("page");
-                        }
-                      } else {
-                        this.$message.error(res.data.errmsg);
-                        this.loadingData = false;
-                      }
-                    });
-                  } else {
-                    this.$message.error(res.data.errmsg);
-                    this.operateLoading = false;
-                  }
-                })
-                .catch(res => {
-                  this.$message.error("访问失败！");
-                });
-            
-            }
-          }
-          }else{
-          if (this.portStatus == "on" && this.compareStatus == "on") {
-            this.$message.error("此端口已打开，请勿重复打开！");
-          } else if (this.portStatus == "off" && this.compareStatus == "off") {
-            this.$message.error("此端口已关闭，请勿重复关闭！");
-          } else {
-            if (this.portStatus == "off") {
-              var obj3 = {
-                terminal_id: this.terminal_id,
-                status: this.portStatus,
-                available_time: "",
-                switch_ip: this.switch_ip,
-                terminal_ip: this.terminal_ip,
-                location: this.location,
-                switch_name: this.switch_name,
-                switch_port: this.switch_port,
-                terminal_type: this.terminal_type
-              };
-              this.operateLoading = true;
-              this.$http
-                .put("/ecc/terminal", obj3)
-                .then(res => {
-                  if (res.data.errcode == "0") {
-                    this.$message.success("端口关闭成功！");
-                    this.portOnOffDialogVisible = false;
-                    this.operateLoading = false;
-                    this.view_loading_text = "端口状态同步中，请稍等...";
-                    this.loadingData = true;
-                    this.$http.get("/ecc/terminal/real/data").then(res => {
-                      if (res.data.errcode == "0") {
-                        this.loadingData = false;
-                        let list1 = res.data.data;
-                        this.tableData = list1;
-                        this.totalNum = res.data.total;
-                        this.terminalList = list1;
-                        this.$message.success("端口状态同步成功！");
-                        this.localPage = JSON.parse(
-                          sessionStorage.getItem("page")
-                        );
-                        if (this.localPage) {
-                          sessionStorage.removeItem("page");
-                        }
-                      } else {
-                        this.$message.error(res.data.errmsg);
-                        this.loadingData = false;
-                      }
-                    });
-                  } else {
-                    this.$message.error(res.data.errmsg);
-                    this.operateLoading = false;
-
-                    console.log(this.pageNum);
-                  }
-                })
-                .catch(res => {
-                  this.$message.error("访问失败！");
-                });
             } else {
-              if (
-                (this.timeRange == "" &&
-                  this.portStatus == "on" &&
-                  this.pickTime == "选择时间段") ||
-                (this.pickTime == "" && this.portStatus == "on")
-              ) {
-                this.$message.warning("请选择开启端口的时间段!");
+              if (this.portStatus == "off") {
+                var offobj = {
+                  status: this.portStatus,
+                  available_time: "",
+                  multipleSelection: this.multipleSelection
+                };
+                this.operateLoading = true;
+                this.$http
+                  .put("/ecc/terminal", offobj)
+                  .then(res => {
+                    if (res.data.errcode == "0") {
+                      console.log(offobj,'kkk')
+                      this.$message.success("端口关闭成功！");
+                      this.portOnOffDialogVisible = false;
+                      this.operateLoading = false;
+                      this.view_loading_text = "端口状态同步中，请稍等...";
+                      this.loadingData = true;
+                      this.$http.get("/ecc/terminal/real/data").then(res => {
+                        if (res.data.errcode == "0") {
+                          this.loadingData = false;
+                          let list1 = res.data.data;
+                          this.tableData = list1;
+                          this.totalNum = res.data.total;
+                          this.terminalList = list1;
+                          this.$message.success("端口状态同步成功！");
+                          this.localPage = JSON.parse(
+                            sessionStorage.getItem("page")
+                          );
+                          if (this.localPage) {
+                            sessionStorage.removeItem("page");
+                          }
+                        } else {
+                          this.$message.error(res.data.errmsg);
+                          this.loadingData = false;
+                        }
+                      });
+                    } else {
+                      this.$message.error(res.data.errmsg);
+                      this.operateLoading = false;
+                    }
+                  })
+                  .catch(res => {
+                    this.$message.error("访问失败！");
+                  });
               } else {
-                var obj1 = {
-                  terminal_id: this.terminal_id,
-                  status: this.portStatus,
-                  available_time: this.pickTime,
-                  switch_ip: this.switch_ip,
-                  terminal_ip: this.terminal_ip,
-                  location: this.location,
-                  switch_name: this.switch_name,
-                  switch_port: this.switch_port,
-                  terminal_type: this.terminal_type
-                };
-                var obj2 = {
-                  terminal_id: this.terminal_id,
-                  status: this.portStatus,
-                  available_time: this.timeRange,
-                  switch_ip: this.switch_ip,
-                  terminal_ip: this.terminal_ip,
-                  location: this.location,
-                  switch_name: this.switch_name,
-                  switch_port: this.switch_port,
-                  terminal_type: this.terminal_type
-                };
-                if (this.pickTime == "选择时间段") {
-                  this.operateLoading = true;
-                  this.$http
-                    .put("/ecc/terminal", obj2)
-                    .then(res => {
-                      if (res.data.errcode == "0") {
-                        this.$message.success("端口开启成功！");
-                        this.portOnOffDialogVisible = false;
-                        this.operateLoading = false;
-                        // this.loadData();
-                        this.view_loading_text = "端口状态同步中，请稍等...";
-                        this.loadingData = true;
-                        this.$http.get("/ecc/terminal/real/data").then(res => {
-                          if (res.data.errcode == "0") {
-                            this.loadingData = false;
-                            let list1 = res.data.data;
-                            this.tableData = list1;
-                            this.totalNum = res.data.total;
-                            this.terminalList = list1;
-                            this.$message.success("端口状态同步成功！");
-                            this.localPage = JSON.parse(
-                              sessionStorage.getItem("page")
-                            );
-                            // console.log(this.localPage,'lll')
-                            if (this.localPage) {
-                              sessionStorage.removeItem("page");
-                            }
-                          } else {
-                            this.$message.error(res.data.errmsg);
-                            this.loadingData = false;
-                          }
-                        });
-
-                        console.log(this.pageNum);
-                        // console.log(obj2);
-                      } else {
-                        this.$message.error(res.data.errmsg);
-                        this.operateLoading = false;
-
-                        console.log(this.pageNum);
-                      }
-                    })
-                    .catch(res => {
-                      this.$message.error("访问失败！");
-                    });
+                if (
+                  (this.timeRange == "" &&
+                    this.portStatus == "on" &&
+                    this.pickTime == "选择时间段") ||
+                  (this.pickTime == "" && this.portStatus == "on")
+                ) {
+                  this.$message.warning("请选择开启端口的时间段!");
                 } else {
-                  this.operateLoading = true;
-                  this.$http
-                    .put("/ecc/terminal", obj1)
-                    .then(res => {
-                      if (res.data.errcode == "0") {
-                        this.$message.success("端口开启成功！");
-                        this.portOnOffDialogVisible = false;
-                        this.operateLoading = false;
-                        // this.loadData();
-                        this.view_loading_text = "端口状态同步中，请稍等...";
-                        this.loadingData = true;
-                        this.$http.get("/ecc/terminal/real/data").then(res => {
-                          if (res.data.errcode == "0") {
-                            this.loadingData = false;
-                            let list1 = res.data.data;
-                            this.tableData = list1;
-                            this.totalNum = res.data.total;
-                            this.terminalList = list1;
-                            this.$message.success("端口状态同步成功！");
-                            this.localPage = JSON.parse(
-                              sessionStorage.getItem("page")
-                            );
-                            // console.log(this.localPage,'lll')
-                            if (this.localPage) {
-                              sessionStorage.removeItem("page");
-                            }
-                          } else {
-                            this.$message.error(res.data.errmsg);
-                            this.loadingData = false;
+                  var spliceList =[]
+                  this.multipleSelection.forEach(item =>{
+                   delete item.status
+                   delete item.available_time
+                   spliceList.push(item)
+                  })
+                  var onObj1 = {
+                    available_time: this.pickTime,
+                    spliceList: spliceList,
+                    status: this.portStatus
+                  };
+                  var onObj2 = {
+                    available_time: this.timeRange,
+                    spliceList: spliceList,
+                    status: this.portStatus
+                  };
+                  if (this.pickTime == "选择时间段") {
+                    this.operateLoading = true;
+                    this.$http
+                      .put("/ecc/terminal", onObj2)
+                      .then(res => {
+                        if (res.data.errcode == "0") {
+                          this.$message.success("端口开启成功！");
+                          this.portOnOffDialogVisible = false;
+                          this.operateLoading = false;
+                          this.view_loading_text = "端口状态同步中，请稍等...";
+                          this.loadingData = true;
+                          this.$http
+                            .get("/ecc/terminal/real/data")
+                            .then(res => {
+                              if (res.data.errcode == "0") {
+                                console.log(onObj2);
+                                this.loadingData = false;
+                                let list1 = res.data.data;
+                                this.tableData = list1;
+                                this.totalNum = res.data.total;
+                                this.terminalList = list1;
+                                this.$message.success("端口状态同步成功！");
+                                this.localPage = JSON.parse(
+                                  sessionStorage.getItem("page")
+                                );
+                                if (this.localPage) {
+                                  sessionStorage.removeItem("page");
+                                }
+                              } else {
+                                this.$message.error(res.data.errmsg);
+                                this.loadingData = false;
+                              }
+                            });
+                        } else {
+                          this.$message.error(res.data.errmsg);
+                          this.operateLoading = false;
+                        }
+                      })
+                      .catch(res => {
+                        this.$message.error("访问失败！");
+                      });
+                  } else {
+                    this.operateLoading = true;
+                    this.$http
+                      .put("/ecc/terminal", onObj1)
+                      .then(res => {
+                        if (res.data.errcode == "0") {
+                          this.$message.success("端口开启成功！");
+                          this.portOnOffDialogVisible = false;
+                          this.operateLoading = false;
+                          this.view_loading_text = "端口状态同步中，请稍等...";
+                          this.loadingData = true;
+                          this.$http
+                            .get("/ecc/terminal/real/data")
+                            .then(res => {
+                              if (res.data.errcode == "0") {
+                                console.log(onObj1);
+                                this.loadingData = false;
+                                let list1 = res.data.data;
+                                this.tableData = list1;
+                                this.totalNum = res.data.total;
+                                this.terminalList = list1;
+                                this.$message.success("端口状态同步成功！");
+                                this.localPage = JSON.parse(
+                                  sessionStorage.getItem("page")
+                                );
+                                if (this.localPage) {
+                                  sessionStorage.removeItem("page");
+                                }
+                              } else {
+                                this.$message.error(res.data.errmsg);
+                                this.loadingData = false;
+                              }
+                            });
+                        } else {
+                          this.$message.error(res.data.errmsg);
+                          this.operateLoading = false;
+                        }
+                      })
+                      .catch(res => {
+                        this.$message.error("访问失败！");
+                      });
+                  }
+                }
+              }
+            }
+          } else {
+            if (this.portStatus == "on" && this.compareStatus == "on") {
+              this.$message.error("此端口已打开，请勿重复打开！");
+            } else if (
+              this.portStatus == "off" &&
+              this.compareStatus == "off"
+            ) {
+              this.$message.error("此端口已关闭，请勿重复关闭！");
+            } else {
+              if (this.portStatus == "off") {
+                var obj3 = {
+                  terminal_id: this.terminal_id,
+                  status: this.portStatus,
+                  available_time: "",
+                  switch_ip: this.switch_ip,
+                  terminal_ip: this.terminal_ip,
+                  location: this.location,
+                  switch_name: this.switch_name,
+                  switch_port: this.switch_port,
+                  terminal_type: this.terminal_type
+                };
+                this.operateLoading = true;
+                this.$http
+                  .put("/ecc/terminal", obj3)
+                  .then(res => {
+                    if (res.data.errcode == "0") {
+                      this.$message.success("端口关闭成功！");
+                      this.portOnOffDialogVisible = false;
+                      this.operateLoading = false;
+                      this.view_loading_text = "端口状态同步中，请稍等...";
+                      this.loadingData = true;
+                      this.$http.get("/ecc/terminal/real/data").then(res => {
+                        if (res.data.errcode == "0") {
+                          this.loadingData = false;
+                          let list1 = res.data.data;
+                          this.tableData = list1;
+                          this.totalNum = res.data.total;
+                          this.terminalList = list1;
+                          this.$message.success("端口状态同步成功！");
+                          this.localPage = JSON.parse(
+                            sessionStorage.getItem("page")
+                          );
+                          if (this.localPage) {
+                            sessionStorage.removeItem("page");
                           }
-                        });
-
-                        console.log(this.pageNum);
-                        // console.log(obj1);
-                      } else {
-                        this.$message.error(res.data.errmsg);
-                        this.operateLoading = false;
-
-                        console.log(this.pageNum);
-                      }
-                    })
-                    .catch(res => {
-                      this.$message.error("访问失败！");
-                    });
+                        } else {
+                          this.$message.error(res.data.errmsg);
+                          this.loadingData = false;
+                        }
+                      });
+                    } else {
+                      this.$message.error(res.data.errmsg);
+                      this.operateLoading = false;
+                    }
+                  })
+                  .catch(res => {
+                    this.$message.error("访问失败！");
+                  });
+              } else {
+                if (
+                  (this.timeRange == "" &&
+                    this.portStatus == "on" &&
+                    this.pickTime == "选择时间段") ||
+                  (this.pickTime == "" && this.portStatus == "on")
+                ) {
+                  this.$message.warning("请选择开启端口的时间段!");
+                } else {
+                  var obj1 = {
+                    terminal_id: this.terminal_id,
+                    status: this.portStatus,
+                    available_time: this.pickTime,
+                    switch_ip: this.switch_ip,
+                    terminal_ip: this.terminal_ip,
+                    location: this.location,
+                    switch_name: this.switch_name,
+                    switch_port: this.switch_port,
+                    terminal_type: this.terminal_type
+                  };
+                  var obj2 = {
+                    terminal_id: this.terminal_id,
+                    status: this.portStatus,
+                    available_time: this.timeRange,
+                    switch_ip: this.switch_ip,
+                    terminal_ip: this.terminal_ip,
+                    location: this.location,
+                    switch_name: this.switch_name,
+                    switch_port: this.switch_port,
+                    terminal_type: this.terminal_type
+                  };
+                  if (this.pickTime == "选择时间段") {
+                    this.operateLoading = true;
+                    this.$http
+                      .put("/ecc/terminal", obj2)
+                      .then(res => {
+                        if (res.data.errcode == "0") {
+                          this.$message.success("端口开启成功！");
+                          this.portOnOffDialogVisible = false;
+                          this.operateLoading = false;
+                          this.view_loading_text = "端口状态同步中，请稍等...";
+                          this.loadingData = true;
+                          this.$http
+                            .get("/ecc/terminal/real/data")
+                            .then(res => {
+                              if (res.data.errcode == "0") {
+                                this.loadingData = false;
+                                let list1 = res.data.data;
+                                this.tableData = list1;
+                                this.totalNum = res.data.total;
+                                this.terminalList = list1;
+                                this.$message.success("端口状态同步成功！");
+                                this.localPage = JSON.parse(
+                                  sessionStorage.getItem("page")
+                                );
+                                if (this.localPage) {
+                                  sessionStorage.removeItem("page");
+                                }
+                              } else {
+                                this.$message.error(res.data.errmsg);
+                                this.loadingData = false;
+                              }
+                            });
+                        } else {
+                          this.$message.error(res.data.errmsg);
+                          this.operateLoading = false;
+                        }
+                      })
+                      .catch(res => {
+                        this.$message.error("访问失败！");
+                      });
+                  } else {
+                    this.operateLoading = true;
+                    this.$http
+                      .put("/ecc/terminal", obj1)
+                      .then(res => {
+                        if (res.data.errcode == "0") {
+                          this.$message.success("端口开启成功！");
+                          this.portOnOffDialogVisible = false;
+                          this.operateLoading = false;
+                          this.view_loading_text = "端口状态同步中，请稍等...";
+                          this.loadingData = true;
+                          this.$http
+                            .get("/ecc/terminal/real/data")
+                            .then(res => {
+                              if (res.data.errcode == "0") {
+                                this.loadingData = false;
+                                let list1 = res.data.data;
+                                this.tableData = list1;
+                                this.totalNum = res.data.total;
+                                this.terminalList = list1;
+                                this.$message.success("端口状态同步成功！");
+                                this.localPage = JSON.parse(
+                                  sessionStorage.getItem("page")
+                                );
+                                if (this.localPage) {
+                                  sessionStorage.removeItem("page");
+                                }
+                              } else {
+                                this.$message.error(res.data.errmsg);
+                                this.loadingData = false;
+                              }
+                            });
+                        } else {
+                          this.$message.error(res.data.errmsg);
+                          this.operateLoading = false;
+                        }
+                      })
+                      .catch(res => {
+                        this.$message.error("访问失败！");
+                      });
+                  }
                 }
               }
             }
           }
-          }
-         
         })
         .catch(() => {
           this.$message({
@@ -2306,34 +2410,35 @@ export default {
     },
     // 多个端口管理
     multiPortsManage(row) {
-       sessionStorage.setItem("page", this.pageNum);
+      sessionStorage.setItem("page", this.pageNum);
       this.timeRange = "";
       this.$http("/ecc/auth/manager").then(res => {
         if (res.data.errcode !== "0") {
           this.$message.warning("对不起，您没有此权限！");
         } else {
-      this.switchPortList = [];
-      this.multipleSelection.forEach(item => {
-        this.switchPortList.push({
-          ip: item.terminal_ip,
-          port: item.switch_port
-        });
-        // console.log(this.switchPortList);
-      });
-      var a = [];
-      for (var i = 0; i < this.multipleSelection.length; i++) {
-        a.push(this.multipleSelection[i].status);
-      }
-      for (var i = 1; i <= a.length - 1; i++) {
-        if (a[0] !== a[i]) {
-          this.$message.error("终端端口状态不一致，无法批量操作，请重新选择！");
-          return;
-        }
-      }
+          this.switchPortList = [];
+          this.multipleSelection.forEach(item => {
+            this.switchPortList.push({
+              ip: item.terminal_ip,
+              port: item.switch_port
+            });
+            // console.log(this.switchPortList);
+          });
+          var a = [];
+          for (var i = 0; i < this.multipleSelection.length; i++) {
+            a.push(this.multipleSelection[i].status);
+          }
+          for (var i = 1; i <= a.length - 1; i++) {
+            if (a[0] !== a[i]) {
+              this.$message.error(
+                "终端端口状态不一致，无法批量操作，请重新选择！"
+              );
+              return;
+            }
+          }
           this.portOnOffDialogVisible = true;
         }
       });
-     
     },
     // 单个端口开启关闭弹框
     portManage(row) {
